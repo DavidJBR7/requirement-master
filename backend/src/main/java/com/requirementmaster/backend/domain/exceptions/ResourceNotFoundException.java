@@ -1,7 +1,7 @@
-package com.requirementmaster.backend.domain.exceptions;
-
-public class ResourceNotFoundException extends RuntimeException {
-    public ResourceNotFoundException(String message) {
-        super(message);
-    }
-}
+//package com.requirementmaster.backend.domain.exceptions;
+//
+//public class ResourceNotFoundException extends RuntimeException {
+//    public ResourceNotFoundException(String message) {
+//        super(message);
+//    }
+//}

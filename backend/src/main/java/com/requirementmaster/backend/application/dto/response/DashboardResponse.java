@@ -1,8 +1,8 @@
-package com.requirementmaster.backend.application.dto.response;
-
-import lombok.Data;
-
-@Data
-public class DashboardResponse {
-    // Placeholder
-}
+//package com.requirementmaster.backend.application.dto.response;
+//
+//import lombok.Data;
+//
+//@Data
+//public class DashboardResponse {
+//    // Placeholder
+//}
