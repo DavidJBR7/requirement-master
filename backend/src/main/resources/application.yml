@@ -1,0 +1,139 @@
+spring:
+  application:
+    name: requirement-master-backend
+  
+  # ===== DATASOURCE (Supabase PostgreSQL) =====
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # ===== JPA / HIBERNATE =====
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: ${SHOW_SQL:false}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: ${FORMAT_SQL:false}
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+  
+  # ===== JACKSON (JSON) =====
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+    time-zone: America/Bogota
+  
+  # ===== FLYWAY (Migraciones) =====
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    table: flyway_schema_history
+
+# ===== SERVER =====
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-exception: false
+    include-stacktrace: never
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain
+    min-response-size: 2048
+  tomcat:
+    connection-timeout: 20000
+    max-connections: 100
+    threads:
+      max: 200
+      min-spare: 10
+
+# ===== JWT =====
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+# ===== CORS =====
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS,PATCH
+  allowed-headers: "*"
+  allow-credentials: true
+  max-age: 3600
+
+# ===== LOGGING =====
+logging:
+  level:
+    com.requirementmaster: ${LOG_LEVEL:INFO}
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+    org.hibernate: WARN
+    org.hibernate.SQL: ${SHOW_SQL:false}
+    org.hibernate.type.descriptor.sql.BasicBinder: ${SHOW_SQL:false}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/requirement-master.log
+    max-size: 10MB
+    max-history: 30
+
+# ===== ACTUATOR (Monitoreo) =====
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: always
+  info:
+    env:
+      enabled: true
+
+# ===== INFO (para /actuator/info) =====
+info:
+  app:
+    name: Requirement Master Backend
+    version: 1.0.0
+    description: Plataforma educativa para levantamiento de requerimientos
+    java:
+      version: ${java.version}
+
+# ===== CONFIGURACIÓN DE LA APLICACIÓN =====
+app:
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:5173}
+  activities:
+    max-attempts: 3
+    retry-delay-seconds: 5
+  gamification:
+    xp:
+      base-per-activity: 50
+      perfect-bonus: 20
+      streak-bonus: 10
+    level:
+      xp-per-level: 500
+  exam:
+    passing-score: 70
+    max-attempts: 2
