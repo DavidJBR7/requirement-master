@@ -1,45 +1,56 @@
-//package com.requirementmaster.backend.domain.entities;
-//
-//import com.fasterxml.jackson.databind.JsonNode;
-//import io.hypersistence.utils.hibernate.type.json.JsonType;
-//import jakarta.persistence.*;
-//import lombok.*;
-//import org.hibernate.annotations.Type;
-//
-//@Entity
-//@Table(name = "activities")
-//@Getter
-//@Setter
-//@Builder
-//@NoArgsConstructor
-//@AllArgsConstructor
-//public class Activity {
-//
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Long id;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "lesson_id")
-//    private Lesson lesson;
-//
-//    @Column(nullable = false)
-//    private String title;
-//
-//    @Enumerated(EnumType.STRING)
-//    private ActivityType type;
-//
-//    @Enumerated(EnumType.STRING)
-//    private DifficultyLevel difficulty;
-//
-//    @Type(JsonType.class)
-//    @Column(columnDefinition = "jsonb")
-//    private JsonNode config;          // Configuración específica de la actividad (preguntas, opciones, etc.)
-//
-//    @Type(JsonType.class)
-//    @Column(columnDefinition = "jsonb")
-//    private JsonNode expectedAnswer;   // Respuesta esperada (formato variable)
-//
-//    private Integer maxScore;
-//    private Integer xpReward;
-//}
+package com.requirementmaster.backend.domain.entities;
+
+import com.requirementmaster.backend.domain.enums.ActivityType;
+import com.requirementmaster.backend.domain.enums.DifficultyLevel;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.Type;
+
+import java.util.Map;
+
+@Entity
+@Table(name = "activities")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Activity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lesson_id", nullable = false)
+    private Lesson lesson;
+
+    @Column(nullable = false, length = 200)
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private ActivityType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private DifficultyLevel difficulty;
+
+    @Column(name = "order_index", nullable = false)
+    private int orderIndex;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private int xpReward = 10;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private int maxScore = 100;
+
+    @Type(JsonType.class)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Object> configuration;
+}
