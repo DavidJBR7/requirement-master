@@ -19,6 +19,25 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
+  # ===== EMAIL (SMTP) =====
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:tu-email@gmail.com}
+    password: ${MAIL_PASSWORD:tu-app-password}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          ssl:
+            trust: smtp.gmail.com
 
 # ===== JPA / HIBERNATE =====
 jpa:
@@ -65,7 +84,9 @@ server:
 # ===== JWT =====
 jwt:
   secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION:86400000}
+  access-expiration: ${JWT_ACCESS_EXPIRATION:900000}                # 15 minutos
+  refresh-expiration-default: ${JWT_REFRESH_DEFAULT:86400000}       # 24 horas
+  refresh-expiration-remember: ${JWT_REFRESH_REMEMBER:2592000000}   # 30 días
 
 # ===== LOGGING =====
 logging:
