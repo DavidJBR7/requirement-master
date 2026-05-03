@@ -1,6 +1,5 @@
 package com.requirementmaster.backend.application.dto.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,10 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginRequest {
-    @NotBlank(message = "El email es obligatorio")
-    @Email(message = "Formato de email inválido")
-    private String email;
+    @NotBlank(message = "El email o nombre de usuario es obligatorio")
+    private String login;
 
     @NotBlank(message = "La contraseña es obligatoria")
     private String password;
+
+    @Builder.Default
+    private boolean rememberMe = false;
 }

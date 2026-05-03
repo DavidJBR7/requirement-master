@@ -2,14 +2,12 @@ package com.requirementmaster.backend.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "lessons")
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -26,6 +24,11 @@ public class Lesson {
 
     @Column(name = "order_index", nullable = false)
     private int orderIndex;
+
+    // true si es el examen final (no tendrá teoría)
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean isExam = false;
 
     @Builder.Default
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true)

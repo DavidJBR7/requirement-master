@@ -12,9 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChangeEmailRequest {
-    @NotBlank(message = "La contraseña actual es obligatoria (por seguridad)")
-    private String password;
-
     @NotBlank(message = "El nuevo email es obligatorio")
     @Email(message = "Formato de email inválido")
     private String newEmail;

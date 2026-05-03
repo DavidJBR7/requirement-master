@@ -4,21 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class GlobalProgressResponse {
-    private Integer xpTotal;
-    private Integer currentLevel;
-    private Integer xpToNextLevel;
-    private Integer lessonsCompleted;
-    private Integer totalLessons;
-    private Integer activitiesCompleted;
-    private Integer totalActivities;
-    private Double averageScore;
-    private Integer currentStreak;
-    private Integer longestStreak;
-    private String lastActivityDate;
+    private int xpTotal;
+    private int lessonsCompleted;        // 0-5
+    private int totalLessons = 5;
+    private boolean examPassed;
 }

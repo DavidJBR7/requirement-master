@@ -1,5 +1,6 @@
 package com.requirementmaster.backend.application.dto.request;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -16,11 +17,12 @@ public class ActivityAnswerRequest {
     @Positive(message = "ID de actividad inválido")
     private Long activityId;
 
-    @NotNull(message = "El ID o índice de la pregunta es obligatorio")
-    private Object questionId;
+    // Identificador de la pregunta dentro de la actividad (p.ej. "q0", "pair1", "item3")
+    @NotNull(message = "El identificador de la pregunta es obligatorio")
+    private String questionId;
 
     @NotNull(message = "La respuesta del usuario es obligatoria")
-    private Object userAnswer;
+    private JsonNode userAnswer;
 
     private Integer timeSpentSeconds;
 

@@ -5,7 +5,6 @@ public final class ApiConstants {
         throw new IllegalStateException("Clase de constantes, no instanciable");
     }
 
-    // Base paths
     public static final String API_BASE = "/api";
     public static final String AUTH_PATH = API_BASE + "/auth";
     public static final String LESSONS_PATH = API_BASE + "/lessons";
@@ -16,6 +15,8 @@ public final class ApiConstants {
     // Auth endpoints
     public static final String LOGIN = "/login";
     public static final String REGISTER = "/register";
+    public static final String FORGOT_PASSWORD = "/forgot-password";
+    public static final String RESET_PASSWORD = "/reset-password";
     public static final String REFRESH_TOKEN = "/refresh-token";
 
     // Common path variables

@@ -4,21 +4,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LessonResponse {
+public class LessonDetailResponse {
     private Long id;
     private String title;
     private String description;
-    private Integer orderIndex;
-    private Boolean isCompleted;
-    private Integer progressPercentage;
-    private Integer totalXpEarned;
+    private int orderIndex;
+    private boolean isExam;
     private List<ActivitySummaryResponse> activities;
-    private LessonProgressResponse progress;
+    private LessonProgressResponse progress;  // puede ser null si no ha iniciado
 }

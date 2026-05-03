@@ -4,15 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponse {
-    private Long id;
-    private String email;
+public class UserProfileResponse {
     private String fullName;
     private String username;
-    private boolean enabled;
+    private String email;
+    private int xpTotal;
+    private int lessonsCompleted;
+    private boolean examPassed;
 }

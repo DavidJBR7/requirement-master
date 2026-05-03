@@ -3,9 +3,7 @@ package com.requirementmaster.backend.shared.utils;
 import java.util.regex.Pattern;
 
 public final class ValidationUtils {
-    private ValidationUtils() {
-        throw new IllegalStateException("Clase de utilidades, no instanciable");
-    }
+    private ValidationUtils() { throw new IllegalStateException("Clase de utilidades"); }
 
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
@@ -13,9 +11,9 @@ public final class ValidationUtils {
     private static final Pattern USERNAME_PATTERN =
             Pattern.compile("^[a-zA-Z0-9._-]{3,20}$");
 
-    // Mínimo 8 caracteres, al menos una letra y un número
+    // Mínimo 8 caracteres, al menos una mayúscula, un número y un carácter especial
     private static final Pattern PASSWORD_PATTERN =
-            Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d@$!%*#?&]{8,}$");
+            Pattern.compile("^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
 
     public static boolean isValidEmail(String email) {
         return email != null && EMAIL_PATTERN.matcher(email).matches();

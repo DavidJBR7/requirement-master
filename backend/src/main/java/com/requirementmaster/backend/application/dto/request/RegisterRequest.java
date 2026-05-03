@@ -1,6 +1,5 @@
 package com.requirementmaster.backend.application.dto.request;
 
-import com.requirementmaster.backend.shared.utils.ValidationUtils;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -20,8 +19,8 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d@$!%*#?&]{8,}$",
-            message = "La contraseña debe tener mínimo 8 caracteres, al menos una letra y un número")
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$",
+            message = "La contraseña debe tener mínimo 8 caracteres, al menos una mayúscula, un número y un carácter especial")
     private String password;
 
     @NotBlank(message = "El nombre completo es obligatorio")

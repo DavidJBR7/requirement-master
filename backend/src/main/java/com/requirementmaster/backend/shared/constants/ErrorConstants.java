@@ -5,7 +5,6 @@ public final class ErrorConstants {
         throw new IllegalStateException("Clase de constantes, no instanciable");
     }
 
-    // Mensajes de error genéricos
     public static final String RESOURCE_NOT_FOUND = "Recurso no encontrado";
     public static final String VALIDATION_ERROR = "Error de validación";
     public static final String UNAUTHORIZED = "No autorizado";
@@ -18,11 +17,12 @@ public final class ErrorConstants {
     public static final String USERNAME_ALREADY_EXISTS = "El nombre de usuario ya está en uso";
     public static final String WEAK_PASSWORD = "La contraseña no cumple los requisitos de seguridad";
     public static final String ACCOUNT_DISABLED = "La cuenta está deshabilitada";
+    public static final String INVALID_RESET_TOKEN = "Código de recuperación inválido o expirado";
 
     // Activities
     public static final String INVALID_ANSWER_FORMAT = "El formato de la respuesta no es válido";
     public static final String LESSON_NOT_STARTED = "La lección no ha sido iniciada";
 
     // Progress
-    public static final String PROGRESS_NOT_FOUND = "No se encontró progreso para el usuario";
+    public static final String PROGRESS_NOT_FOUND = "No se encontró progreso";
 }

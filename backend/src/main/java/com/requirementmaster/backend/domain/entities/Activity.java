@@ -1,7 +1,6 @@
 package com.requirementmaster.backend.domain.entities;
 
 import com.requirementmaster.backend.domain.enums.ActivityType;
-import com.requirementmaster.backend.domain.enums.DifficultyLevel;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,8 +10,7 @@ import java.util.Map;
 
 @Entity
 @Table(name = "activities")
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -35,21 +33,20 @@ public class Activity {
     @Column(nullable = false, length = 30)
     private ActivityType type;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private DifficultyLevel difficulty;
-
     @Column(name = "order_index", nullable = false)
     private int orderIndex;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private int xpReward = 10;
-
+    // Puntos máximos que esta actividad aporta a la nota de la lección (0-100 acumulable)
     @Column(nullable = false)
     @Builder.Default
     private int maxScore = 100;
 
+    // XP máximo que se puede obtener en esta actividad (suma de XP de todas las respuestas correctas)
+    @Column(nullable = false)
+    @Builder.Default
+    private int maxXp = 10;
+
+    // Configuración específica en JSON: preguntas, opciones, XP por ítem, etc.
     @Type(JsonType.class)
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> configuration;

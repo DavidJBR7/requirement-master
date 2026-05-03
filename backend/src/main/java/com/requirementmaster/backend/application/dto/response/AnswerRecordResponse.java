@@ -9,11 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserSummaryResponse {
-    private Long id;
-    private String email;
-    private String fullName;
-    private String username;
-    private Integer level;
-    private Integer currentXp;
+public class AnswerRecordResponse {
+    private String questionId;
+    private String userAnswer;   // representación serializada
+    private boolean correct;
+    private int pointsAwarded;
+    private int xpAwarded;
 }

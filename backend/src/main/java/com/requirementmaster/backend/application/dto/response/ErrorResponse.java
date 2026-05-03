@@ -9,10 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReportExportResponse {
-    private String reportUrl;
-    private String fileName;
-    private Long fileSize;
-    private String generatedAt;
-    private String expiresAt;  // Para URLs temporales
+public class ErrorResponse {
+    private int status;
+    private String error;
+    private String message;
+    private long timestamp;
 }

@@ -5,17 +5,21 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ActivitySummaryResponse {
+public class ActivityFullResponse {
     private Long id;
     private String title;
+    private String description;
     private ActivityType type;
     private int orderIndex;
     private int maxScore;
     private int maxXp;
-    private boolean completed;    // si el usuario ha completado esta actividad en el intento actual
+    private Map<String, Object> configuration;  // preguntas, opciones, etc.
+    private ActivityProgressResponse currentProgress;  // null si no iniciada
 }

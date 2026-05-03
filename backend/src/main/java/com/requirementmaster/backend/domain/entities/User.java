@@ -5,8 +5,7 @@ import lombok.*;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -24,7 +23,7 @@ public class User {
     @Column(nullable = false, length = 100)
     private String fullName;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, unique = true, length = 100)
     private String username;
 
     @Column(nullable = false)
