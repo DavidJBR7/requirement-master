@@ -5,20 +5,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LessonResponse {
+public class ActivitySummaryResponse {
     private Long id;
     private String title;
-    private String description;
+    private String type;
+    private String difficulty;
+    private Integer xpReward;
     private Integer orderIndex;
     private Boolean isCompleted;
-    private Integer progressPercentage;
-    private Integer totalXpEarned;
-    private List<ActivitySummaryResponse> activities;
-    private LessonProgressResponse progress;
 }
