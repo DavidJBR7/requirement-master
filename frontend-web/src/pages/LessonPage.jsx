@@ -1,5 +1,5 @@
 // pages/LessonPage.jsx
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useLessonDetail, useActivity, useSubmitAnswer, useFinalizeLesson, useResetLesson } from '../features/lessons/hooks/useLesson';
 import TheoryView from '../features/lessons/components/TheoryView';
@@ -18,30 +18,32 @@ export default function LessonPage() {
   const [mode, setMode] = useState('theory'); // 'theory' | 'practice' | 'result'
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
   const [result, setResult] = useState(null);
-  const [showingResult, setShowingResult] = useState(false); // evita que la recarga oculte el resultado
+  const [showingResult, setShowingResult] = useState(false);
 
-  // Limpiar estado cuando cambia la lección (por si navegamos directamente a otra)
+  // Referencia que impide que el efecto de reanudación se ejecute más de una vez por sesión
+  const initializedRef = useRef(false);
+
+  // Reiniciar el flag cuando cambia la lección
   useEffect(() => {
+    initializedRef.current = false;
     setResult(null);
     setShowingResult(false);
-    // No reseteamos mode/currentActivityIndex aquí, se hará en el siguiente efecto al cargar la nueva lección
   }, [lessonId]);
 
   // Determinar automáticamente si se debe reanudar práctica o mostrar teoría
   useEffect(() => {
-    if (!lesson) return;
+    if (!lesson || showingResult) return;
 
-    // Si se está mostrando el resultado, no interferir
-    if (showingResult) return;
+    // Si ya se inicializó la sesión, no volver a ajustar automáticamente
+    if (initializedRef.current) return;
 
-    // Si la lección ya fue finalizada (intento actual cerrado) → ir a teoría
     if (lesson.progress?.finalized) {
       setMode('theory');
       setCurrentActivityIndex(0);
+      initializedRef.current = true;
       return;
     }
 
-    // Si hay progreso en curso (alguna actividad respondida o puntuación > 0) → reanudar práctica
     if (lesson.progress && (lesson.progress.completedActivities > 0 || lesson.progress.totalScore > 0)) {
       setMode('practice');
       if (lesson.progress.lastActivityOrder != null) {
@@ -51,10 +53,11 @@ export default function LessonPage() {
         setCurrentActivityIndex(0);
       }
     } else {
-      // Sin progreso: empezar desde teoría
       setMode('theory');
       setCurrentActivityIndex(0);
     }
+
+    initializedRef.current = true;
   }, [lesson, showingResult]);
 
   const activities = lesson?.activities?.sort((a, b) => a.orderIndex - b.orderIndex) || [];
@@ -68,6 +71,7 @@ export default function LessonPage() {
   const handleStartPractice = () => {
     if (isFinalized) return;
     setMode('practice');
+    initializedRef.current = true; // evita que el efecto nos mueva al iniciar manualmente
   };
 
   const handleAnswer = useCallback(
@@ -78,12 +82,13 @@ export default function LessonPage() {
           activityId: currentActivitySummary.id,
           questionId,
           userAnswer,
+          lessonId: lessonId,
         });
       } catch (error) {
         console.error('Falló el envío de la respuesta:', error);
       }
     },
-    [currentActivitySummary, submitAnswerMutation.submitAnswerAsync]
+    [currentActivitySummary, submitAnswerMutation.submitAnswerAsync, lessonId]
   );
 
   const handleNextActivity = () => {
@@ -100,7 +105,7 @@ export default function LessonPage() {
       onSuccess: (data) => {
         setResult(data);
         setMode('result');
-        setShowingResult(true); // Bloquear reanudación automática mientras se muestra el resultado
+        setShowingResult(true);
       },
     });
   };
@@ -112,13 +117,13 @@ export default function LessonPage() {
         setMode('theory');
         setCurrentActivityIndex(0);
         setShowingResult(false);
+        initializedRef.current = false; // permitir que la siguiente carga reanude si corresponde
       },
     });
   };
 
   const handleBackToRoadmap = () => {
-    setShowingResult(false); // Permite que los efectos vuelvan a actuar cuando el usuario salga manualmente
-    // La navegación al roadmap la hace el Link dentro de LessonResult, así que aquí simplemente limpiamos
+    setShowingResult(false);
   };
 
   if (isLoading) return <div className="p-8 text-center">Cargando lección...</div>;
@@ -240,4 +245,4 @@ export default function LessonPage() {
       )}
     </div>
   );
-};
+}
