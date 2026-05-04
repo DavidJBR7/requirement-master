@@ -27,6 +27,8 @@ test-reports/
 
 # Documentos
 *.docx
+*.txt
+*.sh
 backend/codigo_proyecto_20260503_194030.txt
 backend/src/test/java/com/requirementmaster/backend/e2e/ApiFlowTest.java
 backend/src/test/java/com/requirementmaster/backend/integration/web/ActivityControllerIntegrationTest.java
@@ -35,3 +37,4 @@ backend/src/test/java/com/requirementmaster/backend/integration/web/AuthControll
 backend/src/test/java/com/requirementmaster/backend/unit/application/ActivityServiceImplTest.java
 backend/src/test/java/com/requirementmaster/backend/unit/application/AuthServiceImplTest.java
 backend/src/test/java/com/requirementmaster/backend/unit/domain/entities/LessonTest.java
+

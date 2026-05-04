@@ -9,7 +9,7 @@ import ResetPasswordPage from '../pages/ResetPasswordPage';
 import RoadmapPage from '../pages/RoadmapPage';
 import DashboardPage from '../pages/DashboardPage';
 import ProfilePage from '../pages/ProfilePage';
-import ExamPage from '../pages/ExamPage';
+import LessonPage from '../pages/LessonPage';
 
 export function Router() {
   return (
@@ -34,7 +34,7 @@ export function Router() {
         <Route path="/roadmap" element={<RoadmapPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/exam" element={<ExamPage />} />
+        <Route path="/lessons/:id" element={<LessonPage />} />
       </Route>
 
       {/* Catch-all */}
