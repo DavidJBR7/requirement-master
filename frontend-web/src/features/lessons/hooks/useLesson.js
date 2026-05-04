@@ -70,6 +70,7 @@ export function useResetLesson() {
     onSuccess: (_, lessonId) => {
       queryClient.invalidateQueries({ queryKey: ["roadmap"] });
       queryClient.invalidateQueries({ queryKey: ["lesson", lessonId] });
+      queryClient.invalidateQueries({ queryKey: ["activity"] }); // Limpia toda la caché de actividades
     },
   });
 }
