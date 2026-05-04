@@ -1,28 +1,31 @@
-//package com.requirementmaster.backend.web.controllers;
-//
-//import com.requirementmaster.backend.application.dto.response.LessonResponse;
-//import com.requirementmaster.backend.application.service.LessonService;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//import java.util.List;
-//
-//@RestController
-//@RequestMapping("/api/lessons")
-//public class LessonController {
-//
-//    private final LessonService lessonService;
-//
-//    public LessonController(LessonService lessonService) {
-//        this.lessonService = lessonService;
-//    }
-//
-//    @GetMapping
-//    public ResponseEntity<List<LessonResponse>> getAllLessons() {
-//        return ResponseEntity.ok(lessonService.getAllLessons());
-//    }
-//
-//    @GetMapping("/{id}")
-//    public ResponseEntity<LessonResponse> getLessonById(@PathVariable Long id) {
-//        return ResponseEntity.ok(lessonService.getLessonById(id));
-//    }
-//}
+package com.requirementmaster.backend.infrastructure.web.controllers;
+
+import com.requirementmaster.backend.application.dto.response.LessonDetailResponse;
+import com.requirementmaster.backend.application.dto.response.RoadmapLessonResponse;
+import com.requirementmaster.backend.application.service.LessonService;
+import com.requirementmaster.backend.infrastructure.security.UserPrincipal;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/lessons")
+@RequiredArgsConstructor
+public class LessonController {
+
+    private final LessonService lessonService;
+
+    @GetMapping("/roadmap")
+    public ResponseEntity<List<RoadmapLessonResponse>> getRoadmap(@AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(lessonService.getRoadmap(principal.getId()));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<LessonDetailResponse> getLessonDetail(@AuthenticationPrincipal UserPrincipal principal,
+                                                                @PathVariable Long id) {
+        return ResponseEntity.ok(lessonService.getLessonDetail(id, principal.getId()));
+    }
+}

@@ -8,13 +8,13 @@ ARCHIVO_SALIDA="codigo_proyecto_$(date +%Y%m%d_%H%M%S).txt"
 while IFS= read -r -d '' archivo; do
     CONTADOR=$((CONTADOR + 1))
 
-    # Obtener ruta relativa
-    ruta_relativa="${archivo#$DIRECTORIO_BASE/}"
+    # Obtener ruta relativa desde donde se ejecuta el script
+    ruta_relativa="${archivo#$PWD/}"
 
     # Escribir cabecera del archivo
     {
         echo ""
-        echo "$(realpath "$archivo")"
+        echo "$ruta_relativa"
         echo ""
 
         # Escribir contenido
