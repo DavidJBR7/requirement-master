@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../shared/components/ProtectedRoute';
+import { GuestRoute } from '../shared/components/GuestRoute';
 import { Layout } from '../shared/components/Layout';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
@@ -13,11 +14,15 @@ import ExamPage from '../pages/ExamPage';
 export function Router() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      {/* Rutas públicas – solo accesibles sin sesión */}
+      <Route element={<GuestRoute />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+      </Route>
 
+      {/* Rutas protegidas */}
       <Route
         element={
           <ProtectedRoute>
@@ -32,6 +37,7 @@ export function Router() {
         <Route path="/exam" element={<ExamPage />} />
       </Route>
 
+      {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
