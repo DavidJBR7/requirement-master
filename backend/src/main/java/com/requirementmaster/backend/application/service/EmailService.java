@@ -33,7 +33,7 @@ public class EmailService {
 
             helper.setFrom(fromEmail, appName);
             helper.setTo(to);
-            helper.setSubject("Codigo de recuperacion de contrasena - " + appName);
+            helper.setSubject("Codigo de recuperacion de contraseña - " + appName);
 
             String htmlContent = buildPasswordResetEmail(code);
             helper.setText(htmlContent, true);
@@ -120,12 +120,12 @@ public class EmailService {
                 <body>
                     <div class="container">
                         <div class="header">
-                            <h1>Recuperacion de Contrasena</h1>
+                            <h1>Recuperacion de Contraseña</h1>
                         </div>
                         <div class="content">
                             <p style="font-size: 16px; color: #333; line-height: 1.6;">
                                 Estimado usuario,<br><br>
-                                Ha solicitado restablecer su contrasena en <strong>"""
+                                Ha solicitado restablecer su contraseña en <strong>"""
                 + appName + """
                 </strong>.
                                 Utilice el siguiente codigo para completar el proceso:
