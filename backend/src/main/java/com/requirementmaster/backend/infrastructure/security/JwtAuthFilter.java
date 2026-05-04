@@ -1,6 +1,5 @@
 package com.requirementmaster.backend.infrastructure.security;
 
-import com.requirementmaster.backend.infrastructure.security.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

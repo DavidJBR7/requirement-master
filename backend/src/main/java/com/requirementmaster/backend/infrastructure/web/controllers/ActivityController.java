@@ -1,4 +1,4 @@
-package com.requirementmaster.backend.interfaces.rest;
+package com.requirementmaster.backend.infrastructure.web.controllers;
 
 import com.requirementmaster.backend.application.dto.request.ActivityAnswerRequest;
 import com.requirementmaster.backend.application.dto.response.ActivityFullResponse;
