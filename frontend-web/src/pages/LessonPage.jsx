@@ -1,3 +1,4 @@
+// pages/LessonPage.jsx
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useLessonDetail, useActivity, useSubmitAnswer, useFinalizeLesson, useResetLesson } from '../features/lessons/hooks/useLesson';
@@ -17,21 +18,32 @@ export default function LessonPage() {
   const [mode, setMode] = useState('theory'); // 'theory' | 'practice' | 'result'
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
   const [result, setResult] = useState(null);
+  const [showingResult, setShowingResult] = useState(false); // evita que la recarga oculte el resultado
 
-  // Determinar si hay práctica en progreso y desde dónde continuar
+  // Limpiar estado cuando cambia la lección (por si navegamos directamente a otra)
+  useEffect(() => {
+    setResult(null);
+    setShowingResult(false);
+    // No reseteamos mode/currentActivityIndex aquí, se hará en el siguiente efecto al cargar la nueva lección
+  }, [lessonId]);
+
+  // Determinar automáticamente si se debe reanudar práctica o mostrar teoría
   useEffect(() => {
     if (!lesson) return;
-    // Si la lección ya está finalizada, no reanudamos práctica
+
+    // Si se está mostrando el resultado, no interferir
+    if (showingResult) return;
+
+    // Si la lección ya fue finalizada (intento actual cerrado) → ir a teoría
     if (lesson.progress?.finalized) {
       setMode('theory');
       setCurrentActivityIndex(0);
       return;
     }
 
-    // Si hay progreso en curso (alguna actividad iniciada) -> reanudar práctica
+    // Si hay progreso en curso (alguna actividad respondida o puntuación > 0) → reanudar práctica
     if (lesson.progress && (lesson.progress.completedActivities > 0 || lesson.progress.totalScore > 0)) {
       setMode('practice');
-      // Determinar la última actividad en curso
       if (lesson.progress.lastActivityOrder != null) {
         const idx = lesson.activities?.findIndex(a => a.orderIndex === lesson.progress.lastActivityOrder);
         setCurrentActivityIndex(idx >= 0 ? idx : 0);
@@ -39,11 +51,11 @@ export default function LessonPage() {
         setCurrentActivityIndex(0);
       }
     } else {
-      // No hay progreso: empezar desde teoría
+      // Sin progreso: empezar desde teoría
       setMode('theory');
       setCurrentActivityIndex(0);
     }
-  }, [lesson]);
+  }, [lesson, showingResult]);
 
   const activities = lesson?.activities?.sort((a, b) => a.orderIndex - b.orderIndex) || [];
   const currentActivitySummary = activities[currentActivityIndex];
@@ -54,26 +66,25 @@ export default function LessonPage() {
   const isFinalized = lesson?.progress?.finalized;
 
   const handleStartPractice = () => {
-    if (isFinalized) return; // no se puede empezar práctica si ya finalizó
+    if (isFinalized) return;
     setMode('practice');
   };
 
-const handleAnswer = useCallback(
-  async (questionId, userAnswer) => {
-    if (!currentActivitySummary) return;
-    try {
-      await submitAnswerMutation.submitAnswerAsync({
-        activityId: currentActivitySummary.id,
-        questionId,
-        userAnswer,
-      });
-    } catch (error) {
-      // El error ya se muestra en consola, pero podrías añadir un toast si quieres
-      console.error('Falló el envío de la respuesta:', error);
-    }
-  },
-  [currentActivitySummary, submitAnswerMutation.submitAnswerAsync]
-);
+  const handleAnswer = useCallback(
+    async (questionId, userAnswer) => {
+      if (!currentActivitySummary) return;
+      try {
+        await submitAnswerMutation.submitAnswerAsync({
+          activityId: currentActivitySummary.id,
+          questionId,
+          userAnswer,
+        });
+      } catch (error) {
+        console.error('Falló el envío de la respuesta:', error);
+      }
+    },
+    [currentActivitySummary, submitAnswerMutation.submitAnswerAsync]
+  );
 
   const handleNextActivity = () => {
     if (currentActivityIndex < activities.length - 1) {
@@ -89,6 +100,7 @@ const handleAnswer = useCallback(
       onSuccess: (data) => {
         setResult(data);
         setMode('result');
+        setShowingResult(true); // Bloquear reanudación automática mientras se muestra el resultado
       },
     });
   };
@@ -99,8 +111,14 @@ const handleAnswer = useCallback(
         setResult(null);
         setMode('theory');
         setCurrentActivityIndex(0);
+        setShowingResult(false);
       },
     });
+  };
+
+  const handleBackToRoadmap = () => {
+    setShowingResult(false); // Permite que los efectos vuelvan a actuar cuando el usuario salga manualmente
+    // La navegación al roadmap la hace el Link dentro de LessonResult, así que aquí simplemente limpiamos
   };
 
   if (isLoading) return <div className="p-8 text-center">Cargando lección...</div>;
@@ -108,7 +126,7 @@ const handleAnswer = useCallback(
   if (!lesson) return null;
 
   if (mode === 'result' && result) {
-    return <LessonResult result={result} onReset={handleReset} />;
+    return <LessonResult result={result} onReset={handleReset} onBackToRoadmap={handleBackToRoadmap} />;
   }
 
   return (
@@ -188,7 +206,7 @@ const handleAnswer = useCallback(
             />
           )}
 
-          {/* Navegación */}
+          {/* Navegación entre actividades */}
           <div className="flex justify-between mt-8">
             <Button
               onClick={() => setCurrentActivityIndex(prev => Math.max(0, prev - 1))}
