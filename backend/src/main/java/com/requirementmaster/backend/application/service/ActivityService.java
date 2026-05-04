@@ -16,9 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +36,7 @@ public class ActivityService {
     private final ActivityMapper activityMapper;
     private final ProgressMapper progressMapper;
     private final EntityManager entityManager;
+    private static final ConcurrentHashMap<String, Object> progressLocks = new ConcurrentHashMap<>();
 
     @Transactional(readOnly = true)
     public ActivityFullResponse getActivity(Long activityId, Long userId) {
@@ -85,16 +88,7 @@ public class ActivityService {
         }
 
         // Obtener o crear progreso de actividad
-        ActivityProgress activityProgress = activityProgressRepository
-                .findByUserIdAndActivityId(userId, activity.getId())
-                .orElse(null);
-        if (activityProgress == null) {
-            activityProgress = ActivityProgress.builder()
-                    .user(getUserReference(userId))
-                    .activity(activity)
-                    .build();
-            activityProgress = activityProgressRepository.save(activityProgress);
-        }
+        ActivityProgress activityProgress = getOrCreateActivityProgress(userId, activity);
 
         // Validar que la pregunta no haya sido respondida aún
         if (activityProgress.getAnswers().stream()
@@ -102,7 +96,10 @@ public class ActivityService {
             throw new BusinessException("Esta pregunta ya fue respondida en este intento.");
         }
 
-        List<AnswerRecord> records = evaluateAnswer(activity, request.getQuestionId(), request.getUserAnswer(), activityProgress);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode answerNode = mapper.convertValue(request.getUserAnswer(), JsonNode.class);
+
+        List<AnswerRecord> records = evaluateAnswer(activity, request.getQuestionId(), answerNode, activityProgress);
 
         // Sumar puntos a la actividad
         for (AnswerRecord record : records) {
@@ -357,5 +354,23 @@ public class ActivityService {
                 .pointsAwarded(record.getPointsAwarded())
                 .xpAwarded(record.getXpAwarded())
                 .build();
+    }
+
+    private ActivityProgress getOrCreateActivityProgress(Long userId, Activity activity) {
+        String lockKey = userId + "_" + activity.getId();
+        Object lock = progressLocks.computeIfAbsent(lockKey, k -> new Object());
+        synchronized (lock) {
+            ActivityProgress progress = activityProgressRepository
+                    .findByUserIdAndActivityId(userId, activity.getId())
+                    .orElse(null);
+            if (progress == null) {
+                progress = ActivityProgress.builder()
+                        .user(getUserReference(userId))
+                        .activity(activity)
+                        .build();
+                progress = activityProgressRepository.save(progress);
+            }
+            return progress;
+        }
     }
 }

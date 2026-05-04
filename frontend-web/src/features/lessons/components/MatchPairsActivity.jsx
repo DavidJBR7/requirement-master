@@ -1,52 +1,56 @@
 import { useState } from 'react';
-import Input from '../../../shared/components/Input';
 import Button from '../../../shared/components/Button';
 
 export default function MatchPairsActivity({ items, answers, onAnswer }) {
-  // Para cada ítem mostramos el concepto y un select con definiciones
   const [selections, setSelections] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const answerMap = (answers || []).reduce((acc, a) => {
+    acc[a.questionId] = a;
+    return acc;
+  }, {});
 
   const handleSelectionChange = (itemId, definitionId) => {
     setSelections(prev => ({ ...prev, [itemId]: definitionId }));
   };
 
-  const handleSubmit = () => {
-    // Envía todas las respuestas no enviadas aún
-    Object.entries(selections).forEach(([itemId, defId]) => {
-      if (defId && !answers?.some(a => a.questionId === itemId)) {
-        onAnswer(itemId, defId);
-      }
-    });
-  };
-
-  const allAnswered = items.every(item =>
-    answers?.some(a => a.questionId === item.id) || selections[item.id]
-  );
-
-  const getDefinitionText = (defId) => {
+  const handleSubmit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    // Envía secuencialmente las respuestas aún no enviadas
     for (const item of items) {
-      const def = item.options.definitions.find(d => d.id === defId);
-      if (def) return def.text;
+      if (answerMap[item.id]) continue; // ya respondida
+      const selectedDef = selections[item.id];
+      if (selectedDef) {
+        try {
+          await onAnswer(item.id, selectedDef);
+        } catch (err) {
+          console.error(`Error al enviar respuesta para ${item.id}`, err);
+          break;  // detenemos para no generar más errores
+        }
+      }
     }
-    return '';
+    setSubmitting(false);
   };
+
+  const allSelected = items.every(item => answerMap[item.id] || selections[item.id]);
 
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-semibold mb-4">Emparejar conceptos</h3>
       {items.map(item => {
-        const existingAnswer = answers?.find(a => a.questionId === item.id);
-        const isAnswered = !!existingAnswer;
-        const selectedDefId = selections[item.id] || existingAnswer?.userAnswer;
-        const isCorrect = existingAnswer?.isCorrect;
+        const existing = answerMap[item.id];
+        const isAnswered = !!existing;
+        const selectedDefId = selections[item.id] || existing?.userAnswer;
+        const isCorrect = existing?.correct;
 
         return (
           <div key={item.id} className="border rounded-lg p-4 bg-white">
             <label className="block font-medium mb-2">{item.prompt}</label>
             <select
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
               value={selectedDefId || ''}
-              disabled={isAnswered}
+              disabled={isAnswered || submitting}
               onChange={(e) => handleSelectionChange(item.id, e.target.value)}
               aria-label={`Selecciona la definición para ${item.prompt}`}
             >
@@ -63,11 +67,12 @@ export default function MatchPairsActivity({ items, answers, onAnswer }) {
           </div>
         );
       })}
-      {!items.every(item => answers?.some(a => a.questionId === item.id)) && (
+      {items.some(item => !answerMap[item.id]) && (
         <div className="flex justify-end">
           <Button
             onClick={handleSubmit}
-            disabled={!allAnswered}
+            disabled={!allSelected || submitting}
+            isLoading={submitting}
             className="w-full sm:w-auto"
           >
             Enviar respuestas
@@ -76,4 +81,4 @@ export default function MatchPairsActivity({ items, answers, onAnswer }) {
       )}
     </div>
   );
-}
+};

@@ -41,45 +41,40 @@ export default function LessonPage() {
     enabled: mode === 'practice' && !!currentActivitySummary,
   });
 
+  const isFinalized = lesson?.progress?.finalized;
+
   const handleStartPractice = () => {
+    if (isFinalized) return; // no se puede empezar práctica si ya finalizó
     setMode('practice');
   };
 
-  const handleAnswer = useCallback(
-    (questionId, userAnswer) => {
-      if (!currentActivitySummary) return;
-      submitAnswerMutation.mutate(
-        {
-          activityId: currentActivitySummary.id,
-          questionId,
-          userAnswer,
-          // timeSpentSeconds se podría añadir
-        },
-        {
-          onSuccess: (response) => {
-            // La actividad se recargará automáticamente debido a la invalidación en useSubmitAnswer
-          },
-        }
-      );
-    },
-    [currentActivitySummary, submitAnswerMutation]
-  );
+const handleAnswer = useCallback(
+  async (questionId, userAnswer) => {
+    if (!currentActivitySummary) return;
+    try {
+      await submitAnswerMutation.submitAnswerAsync({
+        activityId: currentActivitySummary.id,
+        questionId,
+        userAnswer,
+      });
+    } catch (error) {
+      // El error ya se muestra en consola, pero podrías añadir un toast si quieres
+      console.error('Falló el envío de la respuesta:', error);
+    }
+  },
+  [currentActivitySummary, submitAnswerMutation.submitAnswerAsync]
+);
 
   const handleNextActivity = () => {
     if (currentActivityIndex < activities.length - 1) {
       setCurrentActivityIndex(prev => prev + 1);
     } else {
-      // Todas las actividades completadas, ofrecer finalizar
-      finalizeMutation.mutate(lessonId, {
-        onSuccess: (data) => {
-          setResult(data);
-          setMode('result');
-        },
-      });
+      handleFinalize();
     }
   };
 
   const handleFinalize = () => {
+    if (isFinalized) return;
     finalizeMutation.mutate(lessonId, {
       onSuccess: (data) => {
         setResult(data);
@@ -112,11 +107,12 @@ export default function LessonPage() {
         <TheoryView
           lesson={lesson}
           onStartPractice={handleStartPractice}
-          practiceInProgress={!!lesson.progress && !lesson.progress.finalized}
+          onReset={handleReset}
+          practiceInProgress={!!lesson.progress && !isFinalized}
         />
       )}
 
-      {mode === 'practice' && (
+      {mode === 'practice' && !isFinalized && (
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">Práctica</h2>
@@ -205,6 +201,15 @@ export default function LessonPage() {
           </div>
         </div>
       )}
+
+      {mode === 'practice' && isFinalized && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-6 text-center">
+          <p className="text-yellow-800 mb-4">Esta lección ya fue finalizada. Para volver a practicar, debes reiniciarla.</p>
+          <Button onClick={handleReset} className="bg-yellow-500 hover:bg-yellow-600">
+            Reiniciar lección
+          </Button>
+        </div>
+      )}
     </div>
   );
-}
+};

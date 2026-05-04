@@ -34,19 +34,20 @@ export function useActivity(activityId) {
 export function useSubmitAnswer() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: activityService.submitAnswer,
     onSuccess: (data, variables) => {
-      // Invalidar la actividad actual y el detalle de la lección para refrescar progreso
       queryClient.invalidateQueries({
         queryKey: ["activity", variables.activityId],
       });
-      // También invalidamos la lección para que las barras de progreso se actualicen
-      // (el frontend no sabe el lessonId en este punto, por eso invalidamos el roadmap y
-      // la lección se refrescará al volver a ella; para actualización inmediata usaremos
-      // el dato devuelto por el mutate)
+      queryClient.invalidateQueries({ queryKey: ["roadmap"] }); // por si acaso
     },
   });
+
+  // Devuelve una versión asíncrona del mutate
+  const submitAnswerAsync = (variables) => mutation.mutateAsync(variables);
+
+  return { ...mutation, submitAnswerAsync };
 }
 
 // Finalizar lección
