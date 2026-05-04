@@ -21,6 +21,7 @@ const schema = z.object({
 export default function ResetPasswordForm() {
   const [searchParams] = useSearchParams();
   const tokenFromUrl = searchParams.get('token') || '';
+  const emailFromUrl = searchParams.get('email') || ''; // 👈 Agregar esta línea
 
   const {
     register,
@@ -39,6 +40,19 @@ export default function ResetPasswordForm() {
       <p className="text-sm text-gray-600">
         Ingrese el código recibido y su nueva contraseña.
       </p>
+      
+      {}
+      {emailFromUrl && (
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+          <p className="text-sm text-blue-700">
+            Código enviado a: <strong>{emailFromUrl}</strong>
+          </p>
+          <p className="text-xs text-blue-600 mt-1">
+            ¿No es tu email? Vuelve atrás y solicita un nuevo código.
+          </p>
+        </div>
+      )}
+      
       <Input
         label="Código de recuperación"
         {...register('token')}
