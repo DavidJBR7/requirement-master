@@ -39,6 +39,20 @@ public class ActivityService {
     public ActivityFullResponse getActivity(Long activityId, Long userId) {
         Activity activity = activityRepository.findById(activityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Activity", activityId));
+
+        // Verificar regla del examen
+        Lesson lesson = activity.getLesson();
+        if (lesson.isExam()) {
+            LessonProgress lessonProgress = lessonProgressRepository
+                    .findByUserIdAndLessonId(userId, lesson.getId())
+                    .orElse(null);
+            if (lessonProgress != null && !lessonProgress.isFinalized()) {
+                throw new BusinessException(
+                        "El examen debe completarse en una sola sesión. Debes reiniciarlo para intentarlo de nuevo."
+                );
+            }
+        }
+
         ActivityProgress progress = activityProgressRepository
                 .findByUserIdAndActivityId(userId, activityId)
                 .orElse(null);

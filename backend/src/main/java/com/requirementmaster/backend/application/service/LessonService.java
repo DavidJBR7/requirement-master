@@ -3,6 +3,7 @@ package com.requirementmaster.backend.application.service;
 import com.requirementmaster.backend.application.dto.response.*;
 import com.requirementmaster.backend.application.mapper.LessonMapper;
 import com.requirementmaster.backend.domain.entities.*;
+import com.requirementmaster.backend.domain.exceptions.BusinessException;
 import com.requirementmaster.backend.domain.exceptions.ResourceNotFoundException;
 import com.requirementmaster.backend.infrastructure.persistence.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -73,6 +74,12 @@ public class LessonService {
         LessonProgress lessonProgress = lessonProgressRepository
                 .findByUserIdAndLessonId(userId, lessonId)
                 .orElse(null);
+
+        if (lesson.isExam() && lessonProgress != null && !lessonProgress.isFinalized()) {
+            throw new BusinessException(
+                    "El examen debe completarse en una sola sesión. Debes reiniciarlo para intentarlo de nuevo."
+            );
+        }
 
         // Obtener progreso de actividades para esta lección
         Map<Long, ActivityProgress> activityProgressMap = Collections.emptyMap();
