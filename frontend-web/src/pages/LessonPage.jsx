@@ -18,22 +18,32 @@ export default function LessonPage() {
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
   const [result, setResult] = useState(null);
 
-  // Reiniciar estado al cambiar de lección
-  useEffect(() => {
-    setMode('theory');
-    setCurrentActivityIndex(0);
-    setResult(null);
-  }, [lessonId]);
-
   // Determinar si hay práctica en progreso y desde dónde continuar
   useEffect(() => {
-    if (lesson && lesson.progress && !lesson.progress.finalized && mode !== 'result') {
-      if (lesson.progress.lastActivityOrder != null) {
-        const idx = lesson.activities.findIndex(a => a.orderIndex === lesson.progress.lastActivityOrder);
-        setCurrentActivityIndex(idx >= 0 ? idx : 0);
-      }
+    if (!lesson) return;
+    // Si la lección ya está finalizada, no reanudamos práctica
+    if (lesson.progress?.finalized) {
+      setMode('theory');
+      setCurrentActivityIndex(0);
+      return;
     }
-  }, [lesson, mode]);
+
+    // Si hay progreso en curso (alguna actividad iniciada) -> reanudar práctica
+    if (lesson.progress && (lesson.progress.completedActivities > 0 || lesson.progress.totalScore > 0)) {
+      setMode('practice');
+      // Determinar la última actividad en curso
+      if (lesson.progress.lastActivityOrder != null) {
+        const idx = lesson.activities?.findIndex(a => a.orderIndex === lesson.progress.lastActivityOrder);
+        setCurrentActivityIndex(idx >= 0 ? idx : 0);
+      } else {
+        setCurrentActivityIndex(0);
+      }
+    } else {
+      // No hay progreso: empezar desde teoría
+      setMode('theory');
+      setCurrentActivityIndex(0);
+    }
+  }, [lesson]);
 
   const activities = lesson?.activities?.sort((a, b) => a.orderIndex - b.orderIndex) || [];
   const currentActivitySummary = activities[currentActivityIndex];
