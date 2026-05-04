@@ -80,8 +80,12 @@ public class ProgressService {
         }
         globalProgressRepository.save(gp);
 
+        int timeTakenSeconds = 0;
+        if (lp.getStartedAt() != null) {
+            timeTakenSeconds = (int) java.time.Duration.between(lp.getStartedAt(), LocalDateTime.now()).getSeconds();
+        }
+
         int lessonsCompletedCount = gp.getLessonsCompleted();
-        int timeTakenSeconds = calculateTimeTaken(lp);
 
         return lessonMapper.toResultResponse(lesson, lp, xpEarnedThisAttempt, timeTakenSeconds, lessonsCompletedCount);
     }
@@ -117,12 +121,5 @@ public class ProgressService {
     private boolean wasLessonCompletedBefore(LessonProgress lp) {
         // Ya estaba marcado como completado en un intento anterior
         return lp.isCompleted() && lp.getAttempts() > 1;
-    }
-
-    private int calculateTimeTaken(LessonProgress lp) {
-        if (lp.getStartedAt() != null && lp.getCompletedAt() != null) {
-            return (int) java.time.Duration.between(lp.getStartedAt(), lp.getCompletedAt()).getSeconds();
-        }
-        return 0;
     }
 }
