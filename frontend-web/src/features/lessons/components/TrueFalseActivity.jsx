@@ -50,7 +50,7 @@ export default function TrueFalseActivity({ items, answers, onAnswer }) {
             </div>
             {isAnswered && (
               <p className={`mt-2 text-sm ${isCorrect ? 'text-green-700' : 'text-red-700'}`} role="alert">
-                {isCorrect ? '✅ Correcto' : '❌ Incorrecto'} – +{item.xpReward} XP
+                {isCorrect ? `✅ Correcto +${item.xpReward} XP` : `❌ Incorrecto`}
               </p>
             )}
           </fieldset>

@@ -46,7 +46,7 @@ export default function RoadmapPage() {
       <div className="text-center mb-10">
         <h1
           id="roadmap-heading"
-          className="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-4 pb-4 tracking-tight border-b-2 border-blue-600"
+          className="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-4 pb-4 tracking-tight border-b-2 border-blue-600 !text-blue-600"
         >
           RUTA DE REQUIREMENT MASTER
         </h1>

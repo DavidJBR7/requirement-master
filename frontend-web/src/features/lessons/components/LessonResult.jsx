@@ -20,9 +20,9 @@ export default function LessonResult({ result, onReset, onBackToRoadmap }) {
       </div>
       <div className="flex justify-center gap-4 mt-6">
         <Link to="/roadmap" onClick={onBackToRoadmap}>
-          <Button>Volver al Roadmap</Button>
+          <Button className="cursor-pointer">Volver al Roadmap</Button>
         </Link>
-        <Button onClick={onReset} className="bg-gray-200 text-blue-600 hover:bg-gray-300">
+        <Button onClick={onReset} className="cursor-pointer bg-yellow-500 hover:bg-yellow-600 !text-black">
           Reiniciar lección
         </Button>
       </div>

@@ -1,36 +1,29 @@
 import { useState, useCallback } from 'react';
 
 export default function MatchPairsActivity({ items, answers, onAnswer }) {
-  // Mapa de respuestas existentes desde el backend: { questionId: { userAnswer, correct, xpReward } }
   const answerMap = (answers || []).reduce((acc, a) => {
     acc[a.questionId] = a;
     return acc;
   }, {});
 
-  // Índice del concepto seleccionado actualmente (null = ninguno)
   const [selectedConceptId, setSelectedConceptId] = useState(null);
-  // ID del concepto que se está validando (para mostrar loading)
   const [submittingId, setSubmittingId] = useState(null);
-  // Feedback temporal: { conceptId, correct, xpReward }
   const [feedback, setFeedback] = useState({});
 
-  // Obtener todas las definiciones disponibles
   const allDefinitions = items.length > 0 ? items[0].options.definitions : [];
 
-  // Definiciones ya emparejadas correctamente
   const pairedDefinitionIds = new Set(
     Object.values(answerMap)
       .filter(a => a.correct)
       .map(a => a.userAnswer)
   );
 
-  // Definiciones aún disponibles
   const availableDefinitions = allDefinitions.filter(d => !pairedDefinitionIds.has(d.id));
 
   const handleSelectConcept = (itemId) => {
     if (submittingId) return;
     const existing = answerMap[itemId];
-    if (existing) return; // Ya fue respondido (correcta o incorrectamente)
+    if (existing) return;
     setSelectedConceptId(prev => prev === itemId ? null : itemId);
   };
 
@@ -41,12 +34,11 @@ export default function MatchPairsActivity({ items, answers, onAnswer }) {
       setSubmittingId(selectedConceptId);
       try {
         const result = await onAnswer(selectedConceptId, definitionId);
-        // Guardar feedback
         setFeedback(prev => ({
           ...prev,
           [selectedConceptId]: {
             correct: result.correct,
-            xpReward: result.xpReward,
+            xpAwarded: result.xpAwarded,
           },
         }));
         setSelectedConceptId(null);
@@ -77,7 +69,10 @@ export default function MatchPairsActivity({ items, answers, onAnswer }) {
             const isCorrect = existing?.correct ?? fb?.correct;
             const isSelected = selectedConceptId === item.id;
             const isSubmitting = submittingId === item.id;
-            const isBlocked = isAnswered && !isCorrect; // Respondido incorrectamente → bloqueado
+            const isBlocked = isAnswered && !isCorrect;
+
+            // 💡 XP: prioriza el feedback local, luego el backend, finalmente 0
+            const xpAwarded = fb?.xpAwarded ?? existing?.xpAwarded ?? 0;
 
             return (
               <button
@@ -115,9 +110,10 @@ export default function MatchPairsActivity({ items, answers, onAnswer }) {
                     <span className="text-blue-500 text-sm font-medium flex-shrink-0">Seleccionado</span>
                   )}
                 </div>
+                {/* Mensaje de XP corregido */}
                 {(isCorrect || isBlocked) && (
                   <p className={`text-xs mt-2 ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
-                    {isCorrect ? `+${existing?.xpReward || fb?.xpReward || 0} XP` : 'Sin puntos'}
+                    {isCorrect ? `+${xpAwarded} XP` : 'Sin puntos'}
                   </p>
                 )}
               </button>
@@ -125,7 +121,7 @@ export default function MatchPairsActivity({ items, answers, onAnswer }) {
           })}
         </div>
 
-        {/* Columna derecha: Definiciones */}
+        {/* Columna derecha: Definiciones (sin cambios) */}
         <div className="space-y-3">
           <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Definiciones</h4>
           {availableDefinitions.length === 0 && (
@@ -158,7 +154,6 @@ export default function MatchPairsActivity({ items, answers, onAnswer }) {
               </button>
             );
           })}
-          {/* Definiciones ya emparejadas (inactivas) */}
           {allDefinitions
             .filter(d => pairedDefinitionIds.has(d.id))
             .map(def => (
@@ -173,7 +168,6 @@ export default function MatchPairsActivity({ items, answers, onAnswer }) {
         </div>
       </div>
 
-      {/* Mensaje cuando no hay concepto seleccionado */}
       {!selectedConceptId && !submittingId && items.some(item => !answerMap[item.id]) && (
         <p className="text-sm text-gray-400 text-center mt-4">
           ↑ Seleccioná un concepto de la izquierda para comenzar

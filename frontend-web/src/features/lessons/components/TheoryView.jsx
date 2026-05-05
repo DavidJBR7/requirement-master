@@ -1,7 +1,14 @@
 import Button from '../../../shared/components/Button';
 import { lessonTheoryMap } from '../data/lessonTheory';
 
-export default function TheoryView({ lesson, onStartPractice, onReset, practiceInProgress, isInModal = false }) {
+export default function TheoryView({
+  lesson,
+  onStartPractice,
+  onReset,
+  practiceInProgress,
+  isInModal = false,
+  isResetting = false,           // nueva prop
+}) {
   const theoryContent =
     lessonTheoryMap[lesson.id] ||
     `<p>Contenido teórico no disponible aún para esta lección.</p>`;
@@ -31,7 +38,11 @@ export default function TheoryView({ lesson, onStartPractice, onReset, practiceI
           </Button>
         )}
         {isFinalized && onReset && (
-          <Button onClick={onReset} className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 rounded-xl px-6 py-3">
+          <Button
+            onClick={onReset}
+            isLoading={isResetting}     // añadir esta línea
+            className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 rounded-xl px-6 py-3"
+          >
             Reiniciar lección
           </Button>
         )}
