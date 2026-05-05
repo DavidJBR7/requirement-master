@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../shared/components/ProtectedRoute';
 import { GuestRoute } from '../shared/components/GuestRoute';
 import { Layout } from '../shared/components/Layout';
+import HomePage from '../pages/HomePage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
@@ -14,7 +15,10 @@ import LessonPage from '../pages/LessonPage';
 export function Router() {
   return (
     <Routes>
-      {/* Rutas públicas – solo accesibles sin sesión */}
+      {/* Landing page – pública */}
+      <Route path="/" element={<HomePage />} />
+
+      {/* Rutas de autenticación – solo accesibles sin sesión */}
       <Route element={<GuestRoute />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -30,7 +34,6 @@ export function Router() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<Navigate to="/roadmap" replace />} />
         <Route path="/roadmap" element={<RoadmapPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />

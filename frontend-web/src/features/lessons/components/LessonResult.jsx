@@ -22,7 +22,7 @@ export default function LessonResult({ result, onReset, onBackToRoadmap }) {
         <Link to="/roadmap" onClick={onBackToRoadmap}>
           <Button>Volver al Roadmap</Button>
         </Link>
-        <Button onClick={onReset} className="bg-gray-200 text-gray-800 hover:bg-gray-300">
+        <Button onClick={onReset} className="bg-gray-200 text-blue-600 hover:bg-gray-300">
           Reiniciar lección
         </Button>
       </div>

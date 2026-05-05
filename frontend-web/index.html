@@ -1,13 +1,44 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/frontend-web/src/assets/logo.svg"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend-web</title>
+    <title>Requirement Master</title>
+
+    <!-- Fuente moderna -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
   </head>
-  <body>
+
+  <body class="font-sans antialiased">
     <div id="root"></div>
+    <div id="modal-root"></div>
+
+    <!-- React App -->
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- UserWay Widgetc -->
+    <script>
+      (function (d) {
+        var s = d.createElement("script");
+        s.src = "https://cdn.userway.org/widget.js";
+        s.setAttribute("data-account", "fdkEPrNVBP");
+        s.setAttribute("data-position", 3);
+        s.setAttribute("data-size", "large");
+        s.setAttribute("data-language", "es"); // idioma
+        s.setAttribute("data-version", "latest");
+
+        d.body.appendChild(s);
+      })(document);
+    </script>
   </body>
 </html>

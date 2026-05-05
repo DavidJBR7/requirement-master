@@ -13,11 +13,12 @@ export function useRoadmap() {
 }
 
 // Detalle de lección (teoría + progreso + lista de actividades)
-export function useLessonDetail(lessonId) {
+export function useLessonDetail(lessonId, options = {}) {
   return useQuery({
     queryKey: ["lesson", lessonId],
     queryFn: () => lessonService.getLessonDetail(lessonId),
-    enabled: !!lessonId,
+    enabled: options.enabled !== undefined ? options.enabled : !!lessonId,
+    ...options,
   });
 }
 
