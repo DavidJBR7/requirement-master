@@ -20,7 +20,7 @@ export default function TheoryView({ lesson, onStartPractice, onReset, practiceI
 
       {isFinalized && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm text-yellow-800">
-          Esta lección ya fue finalizada. Para volver a intentarlo debés reiniciarla.
+          Esta lección ya fue finalizada. Para volver a intentarlo debes reiniciarla.
         </div>
       )}
 
