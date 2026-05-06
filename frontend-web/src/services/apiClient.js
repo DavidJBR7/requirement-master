@@ -29,12 +29,14 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
+//Cuando expira el token, se renueva una sola vez mientras se guardan otras peticiones que llegan,
+//luego se reenvían todas juntas con el nuevo token.
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });

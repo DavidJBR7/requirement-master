@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: 3,
       staleTime: 5 * 60 * 1000,
     },
   },
