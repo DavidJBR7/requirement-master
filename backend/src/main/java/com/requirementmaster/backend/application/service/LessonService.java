@@ -39,7 +39,7 @@ public class LessonService {
             Integer bestScore = null;
             Integer totalXp = null;
 
-            if (!previousCompleted && !lesson.isExam()) {
+            if (!previousCompleted) {
                 status = RoadmapLessonResponse.LessonStatus.LOCKED;
             } else if (progress == null) {
                 status = RoadmapLessonResponse.LessonStatus.AVAILABLE;

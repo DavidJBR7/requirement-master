@@ -1,10 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoadmap } from "../features/lessons/hooks/useLesson";
 import RoadmapCard from "../features/lessons/components/RoadmapCard";
 import TheoryModal from "../features/lessons/components/TheoryModal";
 
 export default function RoadmapPage() {
   const { data: lessons, isLoading, error } = useRoadmap();
+
+  useEffect(() => {
+    if (lessons) {
+      console.log("Datos del roadmap:", lessons);
+    }
+  }, [lessons]);
+
   const [selectedLessonId, setSelectedLessonId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -78,7 +85,7 @@ export default function RoadmapPage() {
       {/* Layout de dos columnas */}
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Columna izquierda - Roadmap Cards */}
-        <main className="lg:w-3/5 xl:w-3/5 flex-1 bg-blue-50 rounded-2xl shadow-md p-8 border border-gray-100">
+        <main className="lg:w-5/7 xl:w-5/7 flex-1 bg-blue-50 rounded-2xl shadow-md p-8 border border-gray-100">
           <div className="space-y-4">
             {sortedLessons.map((lesson) => (
               <RoadmapCard
@@ -91,7 +98,7 @@ export default function RoadmapPage() {
         </main>
 
         {/* Columna derecha - Informativa/Persuasiva */}
-        <aside className="lg:w-2/5 xl:w-2/5 flex-shrink-0">
+        <aside className="lg:w-2/7 xl:w-2/7 flex-shrink-0">
           <div className="bg-blue-50 rounded-2xl shadow-md p-8 border border-gray-100 sticky top-8">
             <div className="space-y-6">
               {/* Badge decorativo */}
@@ -176,8 +183,8 @@ export default function RoadmapPage() {
                 </div>
 
                 {/* Call to action sutil */}
-                <div className="bg-gradient-to-br from-blue-300 to-cyan-200 rounded-xl p-4 border border-blue-100">
-                  <p className="text-sm text-blue-800 font-medium">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-800 rounded-xl p-4 border border-blue-100">
+                  <p className="text-sm text-blue-100 font-medium">
                     💡 <span className="font-semibold">Tip:</span> Tómate tu
                     tiempo en cada lección. La práctica constante es la clave
                     del dominio.
