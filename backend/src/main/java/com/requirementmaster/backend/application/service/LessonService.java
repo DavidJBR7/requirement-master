@@ -1,7 +1,6 @@
 package com.requirementmaster.backend.application.service;
 
 import com.requirementmaster.backend.application.dto.response.*;
-import com.requirementmaster.backend.application.mapper.LessonMapper;
 import com.requirementmaster.backend.domain.entities.*;
 import com.requirementmaster.backend.domain.exceptions.BusinessException;
 import com.requirementmaster.backend.domain.exceptions.ResourceNotFoundException;
@@ -22,7 +21,7 @@ public class LessonService {
     private final JpaLessonProgressRepository lessonProgressRepository;
     private final JpaActivityProgressRepository activityProgressRepository;
     private final JpaActivityRepository activityRepository;
-    private final LessonMapper lessonMapper;
+    // private final LessonMapper lessonMapper;  // ELIMINADO
 
     public List<RoadmapLessonResponse> getRoadmap(Long userId) {
         List<Lesson> lessons = lessonRepository.findAllByOrderByOrderIndexAsc();
@@ -31,7 +30,7 @@ public class LessonService {
                 .collect(Collectors.toMap(lp -> lp.getLesson().getId(), lp -> lp));
 
         List<RoadmapLessonResponse> roadmap = new ArrayList<>();
-        boolean previousCompleted = true; // lección 1 siempre disponible
+        boolean previousCompleted = true;
 
         for (Lesson lesson : lessons) {
             LessonProgress progress = progressMap.get(lesson.getId());
@@ -52,13 +51,11 @@ public class LessonService {
                 status = RoadmapLessonResponse.LessonStatus.IN_PROGRESS;
                 currentPercent = progress.getTotalScore();
             } else {
-                // Finalizada pero sin alcanzar 70% o no completada aún
                 status = RoadmapLessonResponse.LessonStatus.AVAILABLE;
             }
 
-            roadmap.add(lessonMapper.toRoadmapLessonResponse(lesson, status, currentPercent, bestScore, totalXp));
+            roadmap.add(RoadmapLessonResponse.of(lesson, status, currentPercent, bestScore, totalXp));
 
-            // Actualizar bandera para siguiente lección: solo se desbloquea si la actual está completada
             if (!lesson.isExam()) {
                 previousCompleted = progress != null && progress.isCompleted();
             }
@@ -81,7 +78,6 @@ public class LessonService {
             );
         }
 
-        // Obtener progreso de actividades para esta lección
         Map<Long, ActivityProgress> activityProgressMap = Collections.emptyMap();
         if (lessonProgress != null) {
             List<ActivityProgress> activityProgressList = activityProgressRepository
@@ -90,6 +86,6 @@ public class LessonService {
                     .collect(Collectors.toMap(ap -> ap.getActivity().getId(), ap -> ap));
         }
 
-        return lessonMapper.toDetailResponse(lesson, activityProgressMap, lessonProgress);
+        return LessonDetailResponse.of(lesson, activityProgressMap, lessonProgress);
     }
 }

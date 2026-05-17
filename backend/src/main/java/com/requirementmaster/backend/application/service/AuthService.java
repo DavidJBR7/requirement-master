@@ -3,7 +3,6 @@ package com.requirementmaster.backend.application.service;
 import com.requirementmaster.backend.application.dto.request.*;
 import com.requirementmaster.backend.application.dto.response.AuthResponse;
 import com.requirementmaster.backend.application.dto.response.MessageResponse;
-import com.requirementmaster.backend.application.mapper.AuthMapper;
 import com.requirementmaster.backend.domain.entities.*;
 import com.requirementmaster.backend.domain.exceptions.BusinessException;
 import com.requirementmaster.backend.infrastructure.persistence.repository.*;
@@ -33,10 +32,9 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
     private final EmailService emailService;
-    private final AuthMapper authMapper;
+    // private final AuthMapper authMapper;  // ELIMINADO
 
     public MessageResponse register(RegisterRequest request) {
-        // Validar unicidad
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException(ErrorConstants.EMAIL_ALREADY_EXISTS);
         }
@@ -44,7 +42,6 @@ public class AuthService {
             throw new BusinessException(ErrorConstants.USERNAME_ALREADY_EXISTS);
         }
 
-        // Crear usuario
         User user = User.builder()
                 .email(request.getEmail().trim().toLowerCase())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -53,7 +50,6 @@ public class AuthService {
                 .build();
         user = userRepository.save(user);
 
-        // Crear progreso global inicial
         GlobalProgress globalProgress = GlobalProgress.builder()
                 .user(user)
                 .xpTotal(0)
@@ -77,30 +73,26 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BusinessException(ErrorConstants.INVALID_CREDENTIALS);
         }
-
         if (!user.isEnabled()) {
             throw new BusinessException(ErrorConstants.ACCOUNT_DISABLED);
         }
 
-        // Generar tokens
         String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getUsername());
-
-        // Almacenar refresh token
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user, rememberMe);
 
-        return authMapper.toAuthResponse(
-                accessToken,
-                refreshToken.getToken(),
-                jwtTokenProvider.getAccessTokenExpiration() / 1000
-        );
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .tokenType("Bearer")
+                .refreshToken(refreshToken.getToken())
+                .expiresIn(jwtTokenProvider.getAccessTokenExpiration() / 1000)
+                .build();
     }
 
     public AuthResponse refreshToken(RefreshTokenRequest request) {
         String token = request.getRefreshToken();
         Optional<RefreshToken> storedTokenOpt = refreshTokenService.findByToken(token);
         RefreshToken storedToken = storedTokenOpt.orElseThrow(
-                () -> new BusinessException("Refresh token inválido")
-        );
+                () -> new BusinessException("Refresh token inválido"));
 
         if (!refreshTokenService.isTokenValid(storedToken)) {
             throw new BusinessException("Refresh token expirado o revocado");
@@ -111,20 +103,18 @@ public class AuthService {
             throw new BusinessException(ErrorConstants.ACCOUNT_DISABLED);
         }
 
-        // Revocar el token usado para evitar reuso (rotación)
         refreshTokenService.revokeToken(token);
-
-        // Generar nuevo par de tokens (usamos rememberMe basado en la expiración original)
         boolean rememberMe = storedToken.getExpiryDate()
-                .isAfter(LocalDateTime.now().plusDays(25)); // si quedan muchos días, era "remember me"
+                .isAfter(LocalDateTime.now().plusDays(25));
         String newAccessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getUsername());
         RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user, rememberMe);
 
-        return authMapper.toAuthResponse(
-                newAccessToken,
-                newRefreshToken.getToken(),
-                jwtTokenProvider.getAccessTokenExpiration() / 1000
-        );
+        return AuthResponse.builder()
+                .accessToken(newAccessToken)
+                .tokenType("Bearer")
+                .refreshToken(newRefreshToken.getToken())
+                .expiresIn(jwtTokenProvider.getAccessTokenExpiration() / 1000)
+                .build();
     }
 
     public void logout(String refreshToken) {
@@ -138,14 +128,12 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException("No existe un usuario con ese correo"));
 
-        // Invalidar tokens de reseteo previos
         List<PasswordResetToken> existingTokens = passwordResetTokenRepository.findAllByEmailAndUsedFalse(email);
         for (PasswordResetToken t : existingTokens) {
             t.setUsed(true);
             passwordResetTokenRepository.save(t);
         }
 
-        // Generar código de 6 dígitos
         Random random = new SecureRandom();
         String code = String.format("%06d", random.nextInt(1_000_000));
 
@@ -179,11 +167,9 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        // Marcar token como usado
         resetToken.setUsed(true);
         passwordResetTokenRepository.save(resetToken);
 
-        // Invalidar todas las sesiones (tokens de refresco)
         refreshTokenService.revokeAllUserTokens(user.getId());
     }
 }

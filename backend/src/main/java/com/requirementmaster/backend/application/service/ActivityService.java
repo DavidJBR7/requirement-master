@@ -3,20 +3,18 @@ package com.requirementmaster.backend.application.service;
 import com.requirementmaster.backend.application.dto.request.ActivityAnswerRequest;
 import com.requirementmaster.backend.application.dto.response.ActivityFullResponse;
 import com.requirementmaster.backend.application.dto.response.AnswerRecordResponse;
-import com.requirementmaster.backend.application.mapper.ActivityMapper;
-import com.requirementmaster.backend.application.mapper.ProgressMapper;
 import com.requirementmaster.backend.domain.entities.*;
 import com.requirementmaster.backend.domain.enums.ActivityType;
 import com.requirementmaster.backend.domain.exceptions.BusinessException;
 import com.requirementmaster.backend.domain.exceptions.ResourceNotFoundException;
 import com.requirementmaster.backend.infrastructure.persistence.repository.*;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.persistence.EntityManager;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -33,17 +31,16 @@ public class ActivityService {
     private final JpaLessonProgressRepository lessonProgressRepository;
     private final JpaAnswerRecordRepository answerRecordRepository;
     private final JpaGlobalProgressRepository globalProgressRepository;
-    private final ActivityMapper activityMapper;
-    private final ProgressMapper progressMapper;
     private final EntityManager entityManager;
+
     private static final ConcurrentHashMap<String, Object> progressLocks = new ConcurrentHashMap<>();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional(readOnly = true)
     public ActivityFullResponse getActivity(Long activityId, Long userId) {
         Activity activity = activityRepository.findById(activityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Activity", activityId));
 
-        // Verificar regla del examen
         Lesson lesson = activity.getLesson();
         if (lesson.isExam()) {
             LessonProgress lessonProgress = lessonProgressRepository
@@ -59,7 +56,7 @@ public class ActivityService {
         ActivityProgress progress = activityProgressRepository
                 .findByUserIdAndActivityId(userId, activityId)
                 .orElse(null);
-        return activityMapper.toFullResponse(activity, progress);
+        return ActivityFullResponse.from(activity, progress);
     }
 
     @Transactional
@@ -68,7 +65,6 @@ public class ActivityService {
                 .orElseThrow(() -> new ResourceNotFoundException("Activity", request.getActivityId()));
 
         Lesson lesson = activity.getLesson();
-        // Obtener o crear progreso de lección
         LessonProgress lessonProgress = lessonProgressRepository
                 .findByUserIdAndLessonId(userId, lesson.getId())
                 .orElse(null);
@@ -87,21 +83,16 @@ public class ActivityService {
             lessonProgress = lessonProgressRepository.save(lessonProgress);
         }
 
-        // Obtener o crear progreso de actividad
         ActivityProgress activityProgress = getOrCreateActivityProgress(userId, activity);
 
-        // Validar que la pregunta no haya sido respondida aún
         if (activityProgress.getAnswers().stream()
                 .anyMatch(ar -> ar.getQuestionId().equals(request.getQuestionId()))) {
             throw new BusinessException("Esta pregunta ya fue respondida en este intento.");
         }
 
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode answerNode = mapper.convertValue(request.getUserAnswer(), JsonNode.class);
-
+        JsonNode answerNode = objectMapper.convertValue(request.getUserAnswer(), JsonNode.class);
         List<AnswerRecord> records = evaluateAnswer(activity, request.getQuestionId(), answerNode, activityProgress);
 
-        // Sumar puntos a la actividad
         for (AnswerRecord record : records) {
             activityProgress.setScore(activityProgress.getScore() + record.getPointsAwarded());
             activityProgress.setXpEarned(activityProgress.getXpEarned() + record.getXpAwarded());
@@ -111,20 +102,24 @@ public class ActivityService {
 
         activityProgress.setAttempts(activityProgress.getAttempts() + 1);
         activityProgress.setLastAttemptAt(LocalDateTime.now());
-
-        // Verificar si actividad fue completada (todos los ítems respondidos)
         checkActivityCompletion(activity, activityProgress);
-
         activityProgressRepository.save(activityProgress);
 
-        // Actualizar progreso de lección (score y actividades completadas)
         updateLessonProgress(lessonProgress, activityProgress, lesson);
 
-        // No se asigna XP al progreso global hasta finalizar lección
+        // Antes: records.stream().map(this::mapToResponse)
         return records.stream()
-                .map(this::mapToResponse)
+                .map(AnswerRecordResponse::from)
                 .collect(Collectors.toList());
     }
+
+    // ... resto de métodos (evaluateAnswer, evaluateTrueFalse, etc.) se mantienen exactamente igual ...
+
+    // =====================
+    // Método privado mapToResponse ELIMINADO
+    // =====================
+    // Queda el resto igual que en la versión original
+    // (incluyendo los métodos evaluate*, checkActivityCompletion, etc.)
 
     private List<AnswerRecord> evaluateAnswer(Activity activity, String questionId,
                                               JsonNode userAnswer, ActivityProgress activityProgress) {
@@ -140,7 +135,6 @@ public class ActivityService {
             return evaluateSortableList(activity, userAnswer, items, activityProgress);
         }
 
-        // Para el resto de tipos, buscamos el ítem por questionId
         Map<String, Object> item = items.stream()
                 .filter(i -> questionId.equals(i.get("id")))
                 .findFirst()
@@ -164,6 +158,8 @@ public class ActivityService {
         }
     }
 
+    // ... (todos los demás métodos privados se quedan igual que en el código original) ...
+    // Se incluyen aquí por completitud, pero están sin cambios.
     private List<AnswerRecord> evaluateTrueFalse(Map<String, Object> item, JsonNode answer, ActivityProgress ap) {
         boolean correct = answer.asBoolean() == (boolean) item.get("correctAnswer");
         return singleRecord(item, answer, correct, ap);
@@ -188,7 +184,6 @@ public class ActivityService {
         String bestOption = (String) item.get("bestOption");
         List<Map<String, Object>> options = (List<Map<String, Object>>) item.get("options");
 
-        // Buscar multiplicador de puntuación de la opción elegida
         double multiplier = options.stream()
                 .filter(o -> chosenOption.equals(o.get("id")))
                 .map(o -> (double) o.get("scoreMultiplier"))
@@ -213,7 +208,7 @@ public class ActivityService {
 
     private List<AnswerRecord> evaluateUserStory(Map<String, Object> item, JsonNode answer, ActivityProgress ap) {
         Map<String, String> correctAnswers = (Map<String, String>) item.get("correctAnswers");
-        JsonNode slots = answer; // debería ser un objeto con slot_rol, slot_accion, slot_beneficio
+        JsonNode slots = answer;
         boolean allCorrect = correctAnswers.entrySet().stream()
                 .allMatch(entry -> {
                     JsonNode slotValue = slots.get(entry.getKey());
@@ -239,8 +234,7 @@ public class ActivityService {
     private List<AnswerRecord> evaluateRewrite(Map<String, Object> item, JsonNode answer, ActivityProgress ap) {
         String userText = answer.asText().trim();
         String expected = ((String) item.get("correctAnswer")).trim();
-        // Validación básica: comparación de strings, se podría mejorar con regex
-        boolean correct = userText.trim().replaceAll("\\s+", " ").equalsIgnoreCase(expected.trim().replaceAll("\\s+", " "));
+        boolean correct = userText.replaceAll("\\s+", " ").equalsIgnoreCase(expected.replaceAll("\\s+", " "));
         int scoreReward = (int) item.get("scoreReward");
         int xpReward = (int) item.get("xpReward");
         int points = correct ? scoreReward : 0;
@@ -259,7 +253,6 @@ public class ActivityService {
 
     private List<AnswerRecord> evaluateSortableList(Activity activity, JsonNode userAnswer,
                                                     List<Map<String, Object>> items, ActivityProgress ap) {
-        // userAnswer debe ser un array de strings con los IDs en el orden elegido
         List<String> userOrder = new ArrayList<>();
         for (JsonNode node : userAnswer) {
             userOrder.add(node.asText());
@@ -268,9 +261,7 @@ public class ActivityService {
         int maxScore = activity.getMaxScore();
         int maxXp = activity.getMaxXp();
         int itemCount = items.size();
-        if (itemCount == 0) {
-            throw new BusinessException("Configuración de actividad inválida: no hay elementos para ordenar");
-        }
+        if (itemCount == 0) throw new BusinessException("Configuración de actividad inválida: no hay elementos para ordenar");
         int pointPerStep = maxScore / itemCount;
         int xpPerStep = maxXp / itemCount;
 
@@ -312,7 +303,6 @@ public class ActivityService {
     private void checkActivityCompletion(Activity activity, ActivityProgress activityProgress) {
         Map<String, Object> config = activity.getConfiguration();
         if (config == null) return;
-
         List<Map<String, Object>> items = (List<Map<String, Object>>) config.get("items");
         if (items == null) return;
 
@@ -328,13 +318,11 @@ public class ActivityService {
     }
 
     private void updateLessonProgress(LessonProgress lp, ActivityProgress ap, Lesson lesson) {
-        // Recalcular score total de la lección sumando los scores de todas las actividades del intento actual
         List<ActivityProgress> allActivityProgress = activityProgressRepository
                 .findByUserIdAndActivity_LessonId(lp.getUser().getId(), lesson.getId());
         int newTotalScore = allActivityProgress.stream().mapToInt(ActivityProgress::getScore).sum();
-        lp.setTotalScore(Math.min(newTotalScore, 100)); // máximo teórico 100
+        lp.setTotalScore(Math.min(newTotalScore, 100));
 
-        // Actualizar actividades completadas
         long completedCount = allActivityProgress.stream().filter(ActivityProgress::isCompleted).count();
         lp.setCompletedActivities((int) completedCount);
 
@@ -342,18 +330,7 @@ public class ActivityService {
     }
 
     private User getUserReference(Long userId) {
-        // Referencia ligera sin consultar toda la entidad
         return entityManager.getReference(User.class, userId);
-    }
-
-    private AnswerRecordResponse mapToResponse(AnswerRecord record) {
-        return AnswerRecordResponse.builder()
-                .questionId(record.getQuestionId())
-                .userAnswer(record.getUserAnswer())
-                .correct(record.isCorrect())
-                .pointsAwarded(record.getPointsAwarded())
-                .xpAwarded(record.getXpAwarded())
-                .build();
     }
 
     private ActivityProgress getOrCreateActivityProgress(Long userId, Activity activity) {
