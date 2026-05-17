@@ -40,3 +40,5 @@ backend/src/test/java/com/requirementmaster/backend/unit/domain/entities/LessonT
 
 # Logs
 *.gz
+
+*.yaml
