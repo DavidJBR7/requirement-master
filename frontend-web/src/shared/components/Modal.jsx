@@ -1,22 +1,21 @@
-import { useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
-export default function Modal({ isOpen, onClose, size = 'lg', children }) {
-  const overlayRef = useRef(null);
+export default function Modal({ isOpen, onClose, size = "lg", children }) {
   const modalRef = useRef(null);
 
   // Cerrar con Escape
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose?.();
+      if (e.key === "Escape") onClose?.();
     };
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
     // Bloquear scroll del body
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
     };
   }, [isOpen, onClose]);
 
@@ -27,24 +26,16 @@ export default function Modal({ isOpen, onClose, size = 'lg', children }) {
     }
   }, [isOpen]);
 
-  const handleOverlayClick = (e) => {
-    if (e.target === overlayRef.current) {
-      onClose?.();
-    }
-  };
-
   if (!isOpen) return null;
 
   const sizeClasses = {
-    lg: 'max-w-4xl w-[90vw] h-[85vh]',
-    md: 'max-w-2xl w-[90vw] max-h-[85vh]',
-    sm: 'max-w-lg w-[90vw] max-h-[85vh]',
+    lg: "max-w-4xl w-[90vw] h-[85vh]",
+    md: "max-w-2xl w-[90vw] max-h-[85vh]",
+    sm: "max-w-lg w-[100vw] max-h-[85vh]",
   };
 
   return createPortal(
     <div
-      ref={overlayRef}
-      onClick={handleOverlayClick}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in"
       role="dialog"
       aria-modal="true"
@@ -57,20 +48,28 @@ export default function Modal({ isOpen, onClose, size = 'lg', children }) {
         {/* Botón de cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+          className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
           aria-label="Cerrar modal"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
         {/* Contenido */}
-        <div className="h-full overflow-y-auto p-8">
-          {children}
-        </div>
+        <div className="h-full overflow-y-auto p-4">{children}</div>
       </div>
     </div>,
-    document.getElementById('modal-root') || document.body
+    document.getElementById("modal-root") || document.body,
   );
 }

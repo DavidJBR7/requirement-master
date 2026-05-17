@@ -1,539 +1,273 @@
 export const lessonTheoryMap = {
   '1': `
-    <div class="space-y-10">
+        <div class="space-y-6 sm:space-y-8">
 
-      <!-- HERO -->
-      <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white p-8 md:p-10 shadow-2xl">
-        <div class="absolute inset-0 opacity-10">
-          <div class="absolute -top-10 -right-10 w-48 h-48 bg-cyan-400 rounded-full blur-3xl"></div>
-          <div class="absolute bottom-0 left-0 w-56 h-56 bg-indigo-500 rounded-full blur-3xl"></div>
-        </div>
-
-        <div class="relative z-10">
-
-          <h1 class="text-4xl md:text-5xl font-black leading-tight mb-5">
-            ¿Qué es un <span class="text-cyan-300">Requerimiento</span>?
-          </h1>
-
-          <p class="text-lg md:text-xl text-blue-100 leading-relaxed max-w-3xl">
-            Los requerimientos son la base sobre la que se construye cualquier sistema de software. 
-            Antes de programar, diseñar o desplegar una aplicación, primero debemos entender 
-            exactamente <strong>qué necesita el usuario</strong> y <strong>qué problema queremos resolver</strong>.
-          </p>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-            <div class="bg-white/10 border border-white/10 rounded-2xl p-4 backdrop-blur">
-              <div class="text-2xl mb-2">🎯</div>
-              <h3 class="font-semibold mb-1">Objetivo</h3>
-              <p class="text-sm text-blue-100">
-                Comprender qué es un requerimiento y por qué es esencial en software.
-              </p>
+          <!-- HERO -->
+          <section class="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white p-5 sm:p-8 md:p-10 shadow-2xl">
+            <div class="absolute inset-0 opacity-10">
+              <div class="absolute -top-10 -right-10 w-40 sm:w-48 h-40 sm:h-48 bg-cyan-400 rounded-full blur-3xl"></div>
+              <div class="absolute bottom-0 left-0 w-44 sm:w-56 h-44 sm:h-56 bg-indigo-500 rounded-full blur-3xl"></div>
             </div>
 
-            <div class="bg-white/10 border border-white/10 rounded-2xl p-4 backdrop-blur">
-              <div class="text-2xl mb-2">🧠</div>
-              <h3 class="font-semibold mb-1">Conceptos clave</h3>
-              <p class="text-sm text-blue-100">
-                Stakeholders, elicitación y especificación de requerimientos.
+            <div class="relative z-10">
+
+              <h1 class="text-2xl sm:text-4xl md:text-5xl font-black leading-tight mb-4 sm:mb-5">
+                ¿Qué es un <span class="text-cyan-300">Requerimiento</span>?
+              </h1>
+
+              <p class="text-sm sm:text-lg md:text-xl text-blue-100 leading-relaxed max-w-3xl">
+                Los requerimientos son la base sobre la que se construye cualquier sistema de software.
+                Antes de programar, diseñar o desplegar una aplicación, primero debemos entender
+                exactamente <strong>qué necesita el usuario</strong> y <strong>qué problema queremos resolver</strong>.
               </p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-6 sm:mt-8">
+                <div class="bg-white/10 border border-white/10 rounded-2xl p-4 backdrop-blur">
+                  <div class="text-xl sm:text-2xl mb-2">🎯</div>
+                  <h3 class="font-semibold text-sm sm:text-base mb-1">Objetivo</h3>
+                  <p class="text-xs sm:text-sm text-blue-100 leading-relaxed">
+                    Comprender qué es un requerimiento y por qué es esencial en software.
+                  </p>
+                </div>
+
+                <div class="bg-white/10 border border-white/10 rounded-2xl p-4 backdrop-blur">
+                  <div class="text-xl sm:text-2xl mb-2">🧠</div>
+                  <h3 class="font-semibold text-sm sm:text-base mb-1">Conceptos clave</h3>
+                  <p class="text-xs sm:text-sm text-blue-100 leading-relaxed">
+                    Stakeholders, elicitación y especificación de requerimientos.
+                  </p>
+                </div>
+
+                <div class="bg-white/10 border border-white/10 rounded-2xl p-4 backdrop-blur">
+                  <div class="text-xl sm:text-2xl mb-2">🏆</div>
+                  <h3 class="font-semibold text-sm sm:text-base mb-1">Meta</h3>
+                  <p class="text-xs sm:text-sm text-blue-100 leading-relaxed">
+                    Alcanzar al menos 70 puntos para desbloquear la siguiente clase.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- OBJETIVOS -->
+          <section class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm">
+            <div class="flex items-start sm:items-center gap-3 mb-5 sm:mb-6">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-100 flex items-center justify-center text-xl sm:text-2xl shrink-0">
+                🎯
+              </div>
+
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">
+                  Objetivos de la clase
+                </h2>
+
+                <p class="text-sm sm:text-base text-slate-500">
+                  Al finalizar esta lección podrás:
+                </p>
+              </div>
             </div>
 
-            <div class="bg-white/10 border border-white/10 rounded-2xl p-4 backdrop-blur">
-              <div class="text-2xl mb-2">🏆</div>
-              <h3 class="font-semibold mb-1">Meta</h3>
-              <p class="text-sm text-blue-100">
-                Alcanzar al menos 70 puntos para desbloquear la siguiente clase.
-              </p>
+            <div class="grid gap-3 sm:gap-4">
+              <div class="flex gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                <div class="text-lg sm:text-2xl shrink-0">✅</div>
+
+                <p class="text-sm sm:text-base text-slate-700 leading-relaxed">
+                  Definir con precisión qué es un <strong>requerimiento</strong> en ingeniería de software.
+                </p>
+              </div>
+
+              <div class="flex gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                <div class="text-lg sm:text-2xl shrink-0">✅</div>
+
+                <p class="text-sm sm:text-base text-slate-700 leading-relaxed">
+                  Explicar por qué los requerimientos son críticos para el éxito de un proyecto.
+                </p>
+              </div>
+
+              <div class="flex gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                <div class="text-lg sm:text-2xl shrink-0">✅</div>
+
+                <p class="text-sm sm:text-base text-slate-700 leading-relaxed">
+                  Identificar stakeholders y comprender los procesos iniciales de elicitación y especificación.
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <!-- OBJETIVOS -->
-      <section class="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center text-2xl">
-            🎯
-          </div>
-          <div>
-            <h2 class="text-3xl font-bold text-slate-900">
-              Objetivos de la clase
-            </h2>
-            <p class="text-slate-500">
-              Al finalizar esta lección podrás:
-            </p>
-          </div>
-        </div>
+          <!-- DEFINICIÓN -->
+          <section class="space-y-5 sm:space-y-6">
+            <div class="flex items-start sm:items-center gap-3">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-indigo-100 flex items-center justify-center text-xl sm:text-2xl shrink-0">
+                📖
+              </div>
 
-        <div class="grid gap-4">
-          <div class="flex gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200">
-            <div class="text-2xl">✅</div>
-            <p class="text-slate-700 leading-relaxed">
-              Definir con precisión qué es un <strong>requerimiento</strong> en ingeniería de software.
-            </p>
-          </div>
+              <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">
+                Definición formal de requerimiento
+              </h2>
+            </div>
 
-          <div class="flex gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200">
-            <div class="text-2xl">✅</div>
-            <p class="text-slate-700 leading-relaxed">
-              Explicar por qué los requerimientos son críticos para el éxito de un proyecto.
-            </p>
-          </div>
+            <div class="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl sm:rounded-3xl p-5 sm:p-8">
+              <div class="flex flex-col sm:flex-row items-start gap-4">
+                <div class="text-3xl sm:text-4xl shrink-0">💡</div>
 
-          <div class="flex gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-200">
-            <div class="text-2xl">✅</div>
-            <p class="text-slate-700 leading-relaxed">
-              Identificar stakeholders y comprender los procesos iniciales de elicitación y especificación.
-            </p>
-          </div>
-        </div>
-      </section>
+                <div>
+                  <p class="text-sm sm:text-lg leading-relaxed text-slate-700">
+                    Según el estándar <strong>IEEE 29148-2011</strong>, un requerimiento es:
+                  </p>
 
-      <!-- DEFINICIÓN -->
-      <section class="space-y-6">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center text-2xl">
-            📖
-          </div>
-          <h2 class="text-3xl font-bold text-slate-900">
-            Definición formal de requerimiento
-          </h2>
-        </div>
+                  <blockquote class="mt-4 sm:mt-5 border-l-4 border-indigo-500 pl-4 sm:pl-5 italic text-slate-800 text-sm sm:text-lg leading-relaxed">
+                    “Una condición o capacidad que debe poseer un sistema para satisfacer un contrato, estándar, especificación u otro documento formalmente impuesto.”
+                  </blockquote>
+                </div>
+              </div>
+            </div>
 
-        <div class="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-3xl p-8">
-          <div class="flex items-start gap-4">
-            <div class="text-4xl">💡</div>
+            <div class="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm">
+              <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mb-4">
+                Definición práctica
+              </h3>
 
-            <div>
-              <p class="text-lg leading-relaxed text-slate-700">
-                Según el estándar <strong>IEEE 29148-2011</strong>, un requerimiento es:
+              <p class="text-sm sm:text-base text-slate-700 leading-relaxed mb-5">
+                Karl Wiegers, uno de los autores más influyentes en ingeniería de requerimientos,
+                describe un requerimiento de una forma más práctica:
               </p>
 
-              <blockquote class="mt-5 border-l-4 border-indigo-500 pl-5 italic text-slate-800 text-lg leading-relaxed">
-                “Una condición o capacidad que debe poseer un sistema para satisfacer un contrato, estándar, especificación u otro documento formalmente impuesto.”
+              <blockquote class="border-l-4 border-cyan-500 pl-4 sm:pl-5 italic text-slate-800 text-sm sm:text-lg leading-relaxed">
+                “Un requerimiento es una declaración de una necesidad que un producto debe satisfacer o una condición que debe cumplir.”
               </blockquote>
-            </div>
-          </div>
-        </div>
 
-        <div class="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
-          <h3 class="text-2xl font-bold text-slate-900 mb-4">
-            Definición práctica
-          </h3>
-
-          <p class="text-slate-700 leading-relaxed mb-5">
-            Karl Wiegers, uno de los autores más influyentes en ingeniería de requerimientos, 
-            describe un requerimiento de una forma más práctica:
-          </p>
-
-          <blockquote class="border-l-4 border-cyan-500 pl-5 italic text-slate-800 text-lg leading-relaxed">
-            “Un requerimiento es una declaración de una necesidad que un producto debe satisfacer o una condición que debe cumplir.”
-          </blockquote>
-
-          <div class="mt-8 rounded-2xl bg-slate-900 text-white p-6 overflow-x-auto">
-            <div class="text-cyan-300 text-sm font-semibold mb-3">
-              EJEMPLO DE REQUERIMIENTO
-            </div>
-
-            <code class="text-sm md:text-base leading-relaxed block">
-              “El sistema debe permitir a un usuario registrado iniciar sesión 
-              utilizando su correo electrónico y una contraseña de al menos 8 caracteres.”
-            </code>
-          </div>
-        </div>
-      </section>
-
-      <!-- IMPORTANCIA -->
-      <section class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-8">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl">
-            ⚠️
-          </div>
-
-          <h2 class="text-3xl font-bold text-slate-900">
-            ¿Por qué son tan importantes?
-          </h2>
-        </div>
-
-        <p class="text-slate-700 leading-relaxed text-lg mb-6">
-          Los requerimientos son la base de todo proyecto de software. 
-          Si están mal definidos, el sistema final probablemente no resolverá el problema real del usuario, 
-          incluso aunque haya sido desarrollado con excelente tecnología.
-        </p>
-
-        <div class="bg-white/80 backdrop-blur border border-amber-100 rounded-2xl p-6">
-          <blockquote class="italic text-slate-800 text-lg leading-relaxed">
-            “La parte más difícil de construir un sistema de software es decidir exactamente qué construir.”
-          </blockquote>
-
-          <p class="mt-4 text-sm text-slate-500">
-            — Karl Wiegers, Software Requirements
-          </p>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-4 mt-8">
-
-          <div class="bg-white rounded-2xl p-6 border border-amber-100 shadow-sm">
-            <div class="text-3xl mb-3">💸</div>
-            <h3 class="font-bold text-slate-900 mb-2">
-              Sobrecostos
-            </h3>
-            <p class="text-sm text-slate-600 leading-relaxed">
-              Corregir errores tarde puede costar hasta 200 veces más.
-            </p>
-          </div>
-
-          <div class="bg-white rounded-2xl p-6 border border-amber-100 shadow-sm">
-            <div class="text-3xl mb-3">⏰</div>
-            <h3 class="font-bold text-slate-900 mb-2">
-              Retrasos
-            </h3>
-            <p class="text-sm text-slate-600 leading-relaxed">
-              Los cambios constantes generan retrasos y retrabajo.
-            </p>
-          </div>
-
-          <div class="bg-white rounded-2xl p-6 border border-amber-100 shadow-sm">
-            <div class="text-3xl mb-3">❌</div>
-            <h3 class="font-bold text-slate-900 mb-2">
-              Fracaso del proyecto
-            </h3>
-            <p class="text-sm text-slate-600 leading-relaxed">
-              Muchos proyectos fallan por no entender correctamente las necesidades reales.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ESTADÍSTICAS -->
-      <section class="bg-slate-900 text-white rounded-3xl p-8 overflow-hidden relative">
-        <div class="absolute inset-0 opacity-10">
-          <div class="absolute top-0 right-0 w-72 h-72 bg-cyan-400 rounded-full blur-3xl"></div>
-        </div>
-
-        <div class="relative z-10">
-          <div class="flex items-center gap-3 mb-8">
-            <div class="text-3xl">📊</div>
-            <h2 class="text-3xl font-bold">
-              Datos importantes
-            </h2>
-          </div>
-
-          <div class="grid md:grid-cols-3 gap-5">
-
-            <div class="rounded-2xl bg-white/10 border border-white/10 p-6 backdrop-blur">
-              <div class="text-5xl font-black text-cyan-300 mb-3">
-                40%–60%
-              </div>
-
-              <p class="text-slate-200 leading-relaxed">
-                De los defectos encontrados en sistemas provienen de errores en requerimientos.
-              </p>
-            </div>
-
-            <div class="rounded-2xl bg-white/10 border border-white/10 p-6 backdrop-blur">
-              <div class="text-5xl font-black text-amber-300 mb-3">
-                50x–200x
-              </div>
-
-              <p class="text-slate-200 leading-relaxed">
-                Más costoso puede ser corregir errores en producción.
-              </p>
-            </div>
-
-            <div class="rounded-2xl bg-white/10 border border-white/10 p-6 backdrop-blur">
-              <div class="text-5xl font-black text-emerald-300 mb-3">
-                29%
-              </div>
-
-              <p class="text-slate-200 leading-relaxed">
-                De los proyectos son considerados completamente exitosos según CHAOS Report 2015.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- CONCEPTOS CLAVE -->
-      <section class="space-y-6">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl">
-            🧠
-          </div>
-
-          <h2 class="text-3xl font-bold text-slate-900">
-            Conceptos clave
-          </h2>
-        </div>
-
-        <div class="grid gap-6">
-
-          <!-- Stakeholder -->
-          <div class="bg-white border border-slate-200 rounded-3xl p-7 shadow-sm">
-            <div class="flex items-center gap-4 mb-5">
-              <div class="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl">
-                👥
-              </div>
-
-              <div>
-                <h3 class="text-2xl font-bold text-slate-900">
-                  Stakeholder
-                </h3>
-
-                <p class="text-slate-500">
-                  Persona u organización interesada en el sistema
-                </p>
-              </div>
-            </div>
-
-            <p class="text-slate-700 leading-relaxed mb-5">
-              Un stakeholder es cualquier persona o entidad que tiene interés en el sistema 
-              o que puede verse afectada por él.
-            </p>
-
-            <div class="grid md:grid-cols-2 gap-4">
-
-              <div class="rounded-2xl bg-slate-50 border border-slate-200 p-5">
-                <div class="font-semibold text-slate-900 mb-2">
-                  Ejemplos
+              <div class="mt-6 sm:mt-8 rounded-2xl bg-slate-900 text-white p-4 sm:p-6 overflow-x-auto">
+                <div class="text-cyan-300 text-xs sm:text-sm font-semibold mb-3">
+                  EJEMPLO DE REQUERIMIENTO
                 </div>
 
-                <ul class="space-y-2 text-slate-700 text-sm">
-                  <li>• Usuarios finales</li>
-                  <li>• Clientes</li>
-                  <li>• Patrocinadores</li>
-                  <li>• Equipo de desarrollo</li>
-                  <li>• Reguladores</li>
-                </ul>
+                <code class="text-xs sm:text-sm md:text-base leading-relaxed block whitespace-pre-wrap">
+                  “El sistema debe permitir a un usuario registrado iniciar sesión
+                  utilizando su correo electrónico y una contraseña de al menos 8 caracteres.”
+                </code>
+              </div>
+            </div>
+          </section>
+
+          <!-- IMPORTANCIA -->
+          <section class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl sm:rounded-3xl p-5 sm:p-8">
+            <div class="flex items-start sm:items-center gap-3 mb-5 sm:mb-6">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-xl sm:text-2xl shrink-0">
+                ⚠️
               </div>
 
-              <div class="rounded-2xl bg-blue-50 border border-blue-100 p-5">
-                <div class="font-semibold text-slate-900 mb-2">
-                  Idea importante
+              <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">
+                ¿Por qué son tan importantes?
+              </h2>
+            </div>
+
+            <p class="text-sm sm:text-lg text-slate-700 leading-relaxed mb-6">
+              Los requerimientos son la base de todo proyecto de software.
+              Si están mal definidos, el sistema final probablemente no resolverá el problema real del usuario,
+              incluso aunque haya sido desarrollado con excelente tecnología.
+            </p>
+
+            <div class="bg-white/80 backdrop-blur border border-amber-100 rounded-2xl p-5 sm:p-6">
+              <blockquote class="italic text-slate-800 text-sm sm:text-lg leading-relaxed">
+                “La parte más difícil de construir un sistema de software es decidir exactamente qué construir.”
+              </blockquote>
+
+              <p class="mt-4 text-xs sm:text-sm text-slate-500">
+                — Karl Wiegers, Software Requirements
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 sm:mt-8">
+
+              <div class="bg-white rounded-2xl p-5 sm:p-6 border border-amber-100 shadow-sm">
+                <div class="text-2xl sm:text-3xl mb-3">💸</div>
+
+                <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-2">
+                  Sobrecostos
+                </h3>
+
+                <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Corregir errores tarde puede costar hasta 200 veces más.
+                </p>
+              </div>
+
+              <div class="bg-white rounded-2xl p-5 sm:p-6 border border-amber-100 shadow-sm">
+                <div class="text-2xl sm:text-3xl mb-3">⏰</div>
+
+                <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-2">
+                  Retrasos
+                </h3>
+
+                <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Los cambios constantes generan retrasos y retrabajo.
+                </p>
+              </div>
+
+              <div class="bg-white rounded-2xl p-5 sm:p-6 border border-amber-100 shadow-sm">
+                <div class="text-2xl sm:text-3xl mb-3">❌</div>
+
+                <h3 class="font-bold text-slate-900 text-sm sm:text-base mb-2">
+                  Fracaso del proyecto
+                </h3>
+
+                <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Muchos proyectos fallan por no entender correctamente las necesidades reales.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- ESTADÍSTICAS -->
+          <section class="bg-slate-900 text-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 overflow-hidden relative">
+            <div class="absolute inset-0 opacity-10">
+              <div class="absolute top-0 right-0 w-56 sm:w-72 h-56 sm:h-72 bg-cyan-400 rounded-full blur-3xl"></div>
+            </div>
+
+            <div class="relative z-10">
+              <div class="flex items-center gap-3 mb-6 sm:mb-8">
+                <div class="text-2xl sm:text-3xl">📊</div>
+
+                <h2 class="text-2xl sm:text-3xl font-bold">
+                  Datos importantes
+                </h2>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+
+                <div class="rounded-2xl bg-white/10 border border-white/10 p-5 sm:p-6 backdrop-blur">
+                  <div class="text-3xl sm:text-5xl font-black text-cyan-300 mb-3">
+                    40%–60%
+                  </div>
+
+                  <p class="text-sm sm:text-base text-slate-200 leading-relaxed">
+                    De los defectos encontrados en sistemas provienen de errores en requerimientos.
+                  </p>
                 </div>
 
-                <p class="text-sm text-slate-700 leading-relaxed">
-                  Un sistema exitoso debe considerar las necesidades de todos los stakeholders relevantes.
-                </p>
+                <div class="rounded-2xl bg-white/10 border border-white/10 p-5 sm:p-6 backdrop-blur">
+                  <div class="text-3xl sm:text-5xl font-black text-amber-300 mb-3">
+                    50x–200x
+                  </div>
+
+                  <p class="text-sm sm:text-base text-slate-200 leading-relaxed">
+                    Más costoso puede ser corregir errores en producción.
+                  </p>
+                </div>
+
+                <div class="rounded-2xl bg-white/10 border border-white/10 p-5 sm:p-6 backdrop-blur">
+                  <div class="text-3xl sm:text-5xl font-black text-emerald-300 mb-3">
+                    29%
+                  </div>
+
+                  <p class="text-sm sm:text-base text-slate-200 leading-relaxed">
+                    De los proyectos son considerados completamente exitosos según CHAOS Report 2015.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          <!-- Elicitación -->
-          <div class="bg-white border border-slate-200 rounded-3xl p-7 shadow-sm">
-            <div class="flex items-center gap-4 mb-5">
-              <div class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center text-3xl">
-                🎤
-              </div>
-
-              <div>
-                <h3 class="text-2xl font-bold text-slate-900">
-                  Elicitación
-                </h3>
-
-                <p class="text-slate-500">
-                  Descubrir los requerimientos reales
-                </p>
-              </div>
-            </div>
-
-            <p class="text-slate-700 leading-relaxed mb-5">
-              La elicitación es el proceso de obtener información de los stakeholders 
-              para comprender qué necesita realmente el sistema.
-            </p>
-
-            <div class="grid md:grid-cols-4 gap-4">
-
-              <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4 text-center">
-                <div class="text-3xl mb-2">🗣️</div>
-                <div class="font-semibold text-sm">Entrevistas</div>
-              </div>
-
-              <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4 text-center">
-                <div class="text-3xl mb-2">📋</div>
-                <div class="font-semibold text-sm">Cuestionarios</div>
-              </div>
-
-              <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4 text-center">
-                <div class="text-3xl mb-2">👀</div>
-                <div class="font-semibold text-sm">Observación</div>
-              </div>
-
-              <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4 text-center">
-                <div class="text-3xl mb-2">🤝</div>
-                <div class="font-semibold text-sm">Talleres</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Especificación -->
-          <div class="bg-white border border-slate-200 rounded-3xl p-7 shadow-sm">
-            <div class="flex items-center gap-4 mb-5">
-              <div class="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center text-3xl">
-                📄
-              </div>
-
-              <div>
-                <h3 class="text-2xl font-bold text-slate-900">
-                  Especificación de requerimientos
-                </h3>
-
-                <p class="text-slate-500">
-                  Documento formal del sistema
-                </p>
-              </div>
-            </div>
-
-            <p class="text-slate-700 leading-relaxed">
-              Es el documento que describe de forma estructurada y detallada 
-              todo lo que el sistema debe hacer, incluyendo funciones, restricciones, 
-              reglas y atributos de calidad.
-            </p>
-
-            <div class="mt-6 rounded-2xl bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 p-5">
-              <div class="flex items-center gap-3">
-                <div class="text-2xl">📚</div>
-
-                <p class="text-slate-700 leading-relaxed">
-                  Históricamente se utilizó el estándar <strong>IEEE 830-1998</strong>; 
-                  actualmente fue reemplazado y actualizado por <strong>IEEE 29148</strong>.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
-      </section>
-
-      <!-- EJEMPLO -->
-      <section class="bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-100 rounded-3xl p-8">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-12 h-12 rounded-2xl bg-cyan-100 flex items-center justify-center text-2xl">
-            🛠️
-          </div>
-
-          <h2 class="text-3xl font-bold text-slate-900">
-            Ejemplo práctico
-          </h2>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-6">
-
-          <div class="bg-white rounded-2xl border border-cyan-100 p-6 shadow-sm">
-            <h3 class="font-bold text-xl text-slate-900 mb-4">
-              ❌ Mal requerimiento
-            </h3>
-
-            <div class="rounded-xl bg-red-50 border border-red-100 p-4 text-slate-700 leading-relaxed">
-              “El sistema debe ser bonito y rápido.”
-            </div>
-
-            <p class="mt-4 text-sm text-slate-600 leading-relaxed">
-              Problema: es ambiguo y no puede verificarse objetivamente.
-            </p>
-          </div>
-
-          <div class="bg-white rounded-2xl border border-cyan-100 p-6 shadow-sm">
-            <h3 class="font-bold text-xl text-slate-900 mb-4">
-              ✅ Buen requerimiento
-            </h3>
-
-            <div class="rounded-xl bg-emerald-50 border border-emerald-100 p-4 text-slate-700 leading-relaxed">
-              “El sistema debe cargar la pantalla principal en menos de 2 segundos.”
-            </div>
-
-            <p class="mt-4 text-sm text-slate-600 leading-relaxed">
-              Ventaja: es específico, claro y verificable.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- RESUMEN -->
-      <section class="bg-slate-900 text-white rounded-3xl p-8">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="text-3xl">📝</div>
-
-          <h2 class="text-3xl font-bold">
-            Resumen rápido
-          </h2>
-        </div>
-
-        <div class="space-y-4">
-
-          <div class="flex gap-4 p-5 rounded-2xl bg-white/5 border border-white/10">
-            <div class="text-cyan-300 text-xl">•</div>
-
-            <p class="text-slate-200 leading-relaxed">
-              Un requerimiento describe una necesidad o condición que el sistema debe cumplir.
-            </p>
-          </div>
-
-          <div class="flex gap-4 p-5 rounded-2xl bg-white/5 border border-white/10">
-            <div class="text-cyan-300 text-xl">•</div>
-
-            <p class="text-slate-200 leading-relaxed">
-              Los errores en requerimientos son una de las principales causas del fracaso de proyectos.
-            </p>
-          </div>
-
-          <div class="flex gap-4 p-5 rounded-2xl bg-white/5 border border-white/10">
-            <div class="text-cyan-300 text-xl">•</div>
-
-            <p class="text-slate-200 leading-relaxed">
-              Los stakeholders proporcionan la información necesaria para descubrir los requerimientos.
-            </p>
-          </div>
-
-          <div class="flex gap-4 p-5 rounded-2xl bg-white/5 border border-white/10">
-            <div class="text-cyan-300 text-xl">•</div>
-
-            <p class="text-slate-200 leading-relaxed">
-              La elicitación y la especificación son procesos fundamentales en ingeniería de software.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- REFERENCIAS -->
-      <section class="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="text-3xl">📚</div>
-
-          <h2 class="text-3xl font-bold text-slate-900">
-            Referencias bibliográficas
-          </h2>
-        </div>
-
-        <div class="space-y-4 text-slate-700 leading-relaxed">
-
-          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-            <strong>Wiegers, Karl E., and Beatty, Joy.</strong> 
-            <em>Software Requirements.</em> 3rd ed. Microsoft Press, 2013.
-          </div>
-
-          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-            <strong>Sommerville, Ian.</strong> 
-            <em>Software Engineering.</em> 10th ed. Pearson, 2016.
-          </div>
-
-          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-            <strong>Robertson, Suzanne, and Robertson, James.</strong> 
-            <em>Mastering the Requirements Process.</em> 3rd ed. Addison-Wesley, 2013.
-          </div>
-
-          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-            <strong>ISO/IEC/IEEE 29148:2011.</strong> 
-            Systems and software engineering — Requirements engineering.
-          </div>
-
-          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-            <strong>Standish Group.</strong> 
-            CHAOS Report 2015.
-          </div>
-        </div>
-      </section>
-
-    </div>
   `,
 
   '2': `

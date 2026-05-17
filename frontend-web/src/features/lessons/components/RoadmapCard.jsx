@@ -47,21 +47,13 @@ export default function RoadmapCard({ lesson, onStart }) {
       <div className="flex gap-3 sm:gap-5 sm:flex-row sm:items-center">
         {/* ICONO */}
         <div
-          className={`
-            flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl
-            flex items-center justify-center
-            sm:transition-transform sm:duration-300 sm:group-hover:scale-110
-            ${
-              lesson.status === "COMPLETED" ? "bg-green-100 text-green-700" : ""
-            }
-            ${
-              lesson.status === "IN_PROGRESS"
-                ? "bg-yellow-100 text-yellow-700"
-                : ""
-            }
-            ${lesson.status === "LOCKED" ? "bg-gray-200 text-gray-500" : ""}
-            ${lesson.status === "AVAILABLE" ? "bg-blue-100 text-blue-700" : ""}
-          `}
+          className={`flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center sm:transition-transform sm:duration-300 sm:group-hover:scale-110 ${
+            lesson.status === "COMPLETED" ? "bg-green-100 text-green-700" : ""
+          } ${
+            lesson.status === "IN_PROGRESS"
+              ? "bg-yellow-100 text-yellow-700"
+              : ""
+          } ${lesson.status === "LOCKED" ? "bg-gray-200 text-gray-500" : ""} ${lesson.status === "AVAILABLE" ? "bg-blue-100 text-blue-700" : ""}`}
         >
           <Icon size={22} weight="fill" className="sm:w-7 sm:h-7" />
         </div>
@@ -147,7 +139,7 @@ export default function RoadmapCard({ lesson, onStart }) {
 
           {/* CTA */}
           {!isLocked && (
-            <div className="mt-3 sm:mt-2 sm:-mb-1">
+            <div className="mt-1 sm:mt-2 sm:-mb-1">
               <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-blue-700 sm:text-blue-600 sm:bg-blue-50 sm:px-3 sm:py-1 sm:rounded-lg sm:transition-all sm:duration-300 sm:group-hover:bg-blue-100">
                 <span>
                   {lesson.status === "IN_PROGRESS" ? "Continuar" : "Comenzar"}

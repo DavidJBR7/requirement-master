@@ -58,8 +58,6 @@ export default function RoadmapPage() {
         {/* HERO */}
         <div className="pt-4 mb-5">
           <div className="relative overflow-hidden rounded-3xl bg-brand-gradient p-5 shadow-xl">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur">
