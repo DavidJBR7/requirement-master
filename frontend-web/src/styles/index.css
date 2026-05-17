@@ -62,6 +62,14 @@
     color: transparent; /* Fallback para otros navegadores */
   }
 
+  .border-brand-gradient {
+    background-image: var(--gradient-brand);
+    background-clip: border-box;
+    -webkit-background-clip: border-box;
+    -webkit-text-fill-color: transparent;
+    color: transparent; /* Fallback para otros navegadores */
+  }
+
   button.bg-brand-gradient:hover {
     filter: brightness(1.2);
   }
