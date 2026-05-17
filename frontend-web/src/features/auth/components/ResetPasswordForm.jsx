@@ -1,27 +1,38 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useResetPassword } from '../hooks/useAuth';
-import { useSearchParams } from 'react-router-dom';
-import Input from '../../../shared/components/Input';
-import Button from '../../../shared/components/Button';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useResetPassword } from "../hooks/useAuth";
+import { useSearchParams } from "react-router-dom";
+import Input from "../../../shared/components/Input";
+import Button from "../../../shared/components/Button";
+import PasswordInput from "../../../shared/components/PasswordInput";
+import { Link } from "react-router-dom";
 
-const schema = z.object({
-  token: z.string().min(1, 'El código es obligatorio'),
-  newPassword: z.string().regex(
-    /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
-    'Debe tener mayúscula, número y carácter especial'
-  ),
-  confirmNewPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmNewPassword, {
-  message: 'Las contraseñas no coinciden',
-  path: ['confirmNewPassword'],
-});
+const schema = z
+  .object({
+    token: z
+      .string()
+      .min(6, "El código es de 6 digitos")
+      .max(6, "El código es de 6 digitos")
+      .regex(/^[0-9]+$/, "Solo se permiten números (0-9)"),
+    newPassword: z
+      .string()
+      .min(8, "Mínimo 8 caracteres")
+      .regex(
+        /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])/,
+        "Debe tener mayúscula, número y carácter especial",
+      ),
+    confirmNewPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmNewPassword"],
+  });
 
 export default function ResetPasswordForm() {
   const [searchParams] = useSearchParams();
-  const tokenFromUrl = searchParams.get('token') || '';
-  const emailFromUrl = searchParams.get('email') || ''; // 👈 Agregar esta línea
+  const tokenFromUrl = searchParams.get("token") || "";
+  const emailFromUrl = searchParams.get("email") || "";
 
   const {
     register,
@@ -37,10 +48,6 @@ export default function ResetPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <p className="text-sm text-gray-600">
-        Ingrese el código recibido y su nueva contraseña.
-      </p>
-      
       {}
       {emailFromUrl && (
         <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
@@ -48,28 +55,33 @@ export default function ResetPasswordForm() {
             Código enviado a: <strong>{emailFromUrl}</strong>
           </p>
           <p className="text-xs text-blue-600 mt-1">
-            ¿No es tu email? Vuelve atrás y solicita un nuevo código.
+            ¿No es tu email? Vuelve{" "}
+            <Link to="/forgot-password" className="underline">
+              atrás
+            </Link>{" "}
+            y solicita un nuevo código.
           </p>
         </div>
       )}
-      
+
       <Input
         label="Código de recuperación"
-        {...register('token')}
+        {...register("token")}
         error={errors.token?.message}
       />
-      <Input
+
+      <PasswordInput
         label="Nueva contraseña"
-        type="password"
-        {...register('newPassword')}
+        {...register("newPassword")}
         error={errors.newPassword?.message}
       />
-      <Input
+
+      <PasswordInput
         label="Confirmar nueva contraseña"
-        type="password"
-        {...register('confirmNewPassword')}
+        {...register("confirmNewPassword")}
         error={errors.confirmNewPassword?.message}
       />
+
       <Button
         type="submit"
         isLoading={isSubmitting || mutation.isPending}
@@ -83,9 +95,12 @@ export default function ResetPasswordForm() {
         </p>
       )}
       {mutation.isError && (
-        <p className="text-red-600 text-sm text-center">
-          Error al restablecer. Verifique el código.
-        </p>
+        <>
+          <p className="text-red-600 text-sm text-center">
+            {mutation.error?.response?.data?.message ||
+              "Error al restablecer. Verifique el código."}
+          </p>
+        </>
       )}
     </form>
   );

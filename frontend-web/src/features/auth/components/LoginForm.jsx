@@ -1,13 +1,14 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useLogin } from '../hooks/useAuth';
-import Input from '../../../shared/components/Input';
-import Button from '../../../shared/components/Button';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useLogin } from "../hooks/useAuth";
+import Input from "../../../shared/components/Input";
+import Button from "../../../shared/components/Button";
+import PasswordInput from "../../../shared/components/PasswordInput";
 
 const loginSchema = z.object({
-  login: z.string().min(1, 'Ingrese email o usuario'),
-  password: z.string().min(1, 'Ingrese la contraseña'),
+  login: z.string().min(1, "Ingrese email o usuario"),
+  password: z.string().min(1, "Ingrese la contraseña"),
   rememberMe: z.boolean().optional(),
 });
 
@@ -28,18 +29,38 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Input label="Email o usuario" type="text" {...register('login')} error={errors.login?.message} />
-      <Input label="Contraseña" type="password" {...register('password')} error={errors.password?.message} />
+      <Input
+        label="Email o usuario"
+        type="text"
+        {...register("login")}
+        error={errors.login?.message}
+      />
+      <PasswordInput
+        label="Contraseña"
+        {...register("password")}
+        error={errors.password?.message}
+      />
       <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" {...register('rememberMe')} />
+        <label className="flex items-center gap-2 text-sm cursor-pointer hover:text-gray-700 select-none">
+          <input
+            type="checkbox"
+            {...register("rememberMe")}
+            className="cursor-pointer"
+          />
           Recordarme
         </label>
-        <a href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+        <a
+          href="/forgot-password"
+          className="text-sm text-blue-600 hover:underline"
+        >
           ¿Olvidaste tu contraseña?
         </a>
       </div>
-      <Button type="submit" isLoading={isSubmitting || loginMutation.isPending} className="w-full">
+      <Button
+        type="submit"
+        isLoading={isSubmitting || loginMutation.isPending}
+        className="w-full"
+      >
         Iniciar sesión
       </Button>
       {loginMutation.isError && (

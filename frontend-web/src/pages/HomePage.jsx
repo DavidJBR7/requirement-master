@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import Button from '../shared/components/Button';
 import { LogoIcon } from '../shared/components/LogoIcon';

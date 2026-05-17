@@ -1,13 +1,13 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useForgotPassword } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom'; // añadido
-import Input from '../../../shared/components/Input';
-import Button from '../../../shared/components/Button';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useForgotPassword } from "../hooks/useAuth";
+import { useNavigate } from "react-router-dom"; // añadido
+import Input from "../../../shared/components/Input";
+import Button from "../../../shared/components/Button";
 
 const schema = z.object({
-  email: z.string().email('Email inválido'),
+  email: z.string().email("Email inválido"),
 });
 
 export default function ForgotPasswordForm() {
@@ -20,25 +20,32 @@ export default function ForgotPasswordForm() {
     resolver: zodResolver(schema),
   });
   const mutation = useForgotPassword();
-  const navigate = useNavigate(); // añadido
+  const navigate = useNavigate();
 
   const onSubmit = (data) => mutation.mutate(data);
 
   const handleGoToReset = () => {
-    const email = getValues('email');
+    const email = getValues("email");
     navigate(`/reset-password?email=${encodeURIComponent(email)}`);
+  };
+
+  // Determinar el mensaje de error a mostrar
+  const getErrorMessage = () => {
+    if (errors.email?.message) return errors.email?.message;
+    if (mutation.isError && mutation.error?.response?.data?.message) {
+      return mutation.error.response.data.message;
+    }
+    if (mutation.isError) return "Error al enviar el código";
+    return undefined;
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <p className="text-sm text-gray-600">
-        Ingrese su correo electrónico y le enviaremos un código de recuperación.
-      </p>
       <Input
         label="Email"
         type="email"
-        {...register('email')}
-        error={errors.email?.message}
+        {...register("email")}
+        error={getErrorMessage()}
         disabled={mutation.isSuccess} // deshabilitar después de éxito
       />
       {!mutation.isSuccess ? (
@@ -62,11 +69,6 @@ export default function ForgotPasswordForm() {
             Ir a restablecer contraseña
           </Button>
         </>
-      )}
-      {mutation.isError && (
-        <p className="text-red-600 text-sm text-center">
-          No se pudo enviar el código. Verifique el email.
-        </p>
       )}
     </form>
   );

@@ -18,11 +18,8 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Mejorar foco visible */
   :focus-visible {
-    outline: 2px solid #2563eb;
-    outline-offset: 2px;
-    border-radius: 4px;
+    outline: transparent;
   }
 
   /* Scrollbar estilizado */
