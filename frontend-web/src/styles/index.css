@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* ========== Variables personalizadas ========== */
+:root {
+  --gradient-brand: linear-gradient(to right, #3884ff, #2052bd, #15349b);
+}
+
 /* ========== Configuración base ========== */
 @layer base {
   html {
@@ -44,55 +49,20 @@
   .text-balance {
     text-wrap: balance;
   }
-}
 
-/* ========== Animaciones ========== */
-@keyframes fade-in {
-  from {
-    opacity: 0;
+  .bg-brand-gradient {
+    background-image: var(--gradient-brand);
   }
-  to {
-    opacity: 1;
+
+  .text-brand-gradient {
+    background-image: var(--gradient-brand);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent; /* Fallback para otros navegadores */
   }
-}
 
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
+  button.bg-brand-gradient:hover {
+    filter: brightness(1.2);
   }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.2s ease-out;
-}
-
-.animate-scale-in {
-  animation: scale-in 0.25s ease-out;
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
-}
-
-/* ========== Transiciones suaves globales ========== */
-* {
-  transition-property: background-color, border-color, color, box-shadow;
-  transition-duration: 150ms;
-  transition-timing-function: ease-in-out;
 }

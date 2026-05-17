@@ -1,5 +1,6 @@
 import { LogoIcon } from "./LogoIcon";
 import { Link } from "react-router-dom";
+import { House } from "@phosphor-icons/react";
 
 export default function AuthLayout({ children, currentPage }) {
   const pageInfo = {
@@ -38,7 +39,7 @@ export default function AuthLayout({ children, currentPage }) {
   return (
     <div className="min-h-screen flex">
       {/* Lado izquierdo - Decorativo */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 relative overflow-hidden items-center justify-center p-12">
+      <div className="hidden lg:flex lg:w-1/2 bg-brand-gradient relative overflow-hidden items-center justify-center p-12">
         {/* Formas decorativas */}
         <div className="absolute top-20 left-10 w-40 h-40 bg-blue-400/20 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-60 h-60 bg-blue-300/20 rounded-full blur-3xl" />
@@ -71,16 +72,19 @@ export default function AuthLayout({ children, currentPage }) {
         <div className="relative z-10 text-center text-white space-y-6 max-w-md">
           <Link
             to="/home"
-            className="relative w-20 h-20 mx-auto bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center hover:bg-black/40 transition-all duration-300 group -mt-8"
+            className="relative w-20 h-20 mx-auto bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center hover:bg-black/40 transition-all duration-300 group -mt-8 overflow-hidden"
           >
             {/* Icono normal (LogoIcon) */}
-            <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 group-hover:opacity-20">
+            <div className="absolute inset-0 flex items-center justify-center transition-all duration-300 group-hover:opacity-0 group-hover:translate-y-2">
               <LogoIcon className="text-white w-20 h-20" />
             </div>
 
             {/* Icono hover (Casa) */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-              <i className="fa-regular fa-house text-white text-5xl flex items-center justify-center w-full h-full"></i>
+            <div
+              className="absolute inset-0 flex items-center justify-center opacity-0 translate-y-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0"
+              title="Volver al inicio"
+            >
+              <House className="w-[50%] h-[50%]" />
             </div>
           </Link>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -98,9 +102,12 @@ export default function AuthLayout({ children, currentPage }) {
         <div className="w-full max-w-md border border-blue-600 p-10 rounded-xl shadow-xl bg-white">
           {/* Logo móvil */}
           <div className="lg:hidden text-center mb-8">
-            <div className="w-14 h-14 mx-auto bg-blue-600 rounded-2xl flex items-center justify-center mb-3">
+            <Link
+              to="/home"
+              className="w-14 h-14 mx-auto bg-blue-600 rounded-2xl flex items-center justify-center mb-3"
+            >
               <LogoIcon className={`text-white`} />
-            </div>
+            </Link>
             <h2 className="text-xl font-bold text-gray-900">
               Requirement Master
             </h2>
