@@ -38,3 +38,5 @@ backend/src/test/java/com/requirementmaster/backend/unit/application/ActivitySer
 backend/src/test/java/com/requirementmaster/backend/unit/application/AuthServiceImplTest.java
 backend/src/test/java/com/requirementmaster/backend/unit/domain/entities/LessonTest.java
 
+# Logs
+*.gz
