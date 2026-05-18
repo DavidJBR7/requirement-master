@@ -305,7 +305,7 @@ export function Layout() {
         )}
 
         {/* Contenido */}
-        <div className="relative z-10 p-6 lg:p-8">
+        <div className="relative z-10">
           <Outlet />
         </div>
       </main>

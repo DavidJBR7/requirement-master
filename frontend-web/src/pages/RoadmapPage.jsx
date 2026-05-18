@@ -54,7 +54,7 @@ export default function RoadmapPage() {
 
   return (
     <>
-      <section className="w-full max-w-3xl mx-auto">
+      <section className="w-full max-w-3xl mx-auto p-6 lg:p-8">
         {/* HERO */}
         <div className="pt-4 mb-5">
           <div className="relative overflow-hidden rounded-3xl bg-brand-gradient p-5 shadow-xl">
