@@ -40,7 +40,7 @@ public class LessonDetailResponse {
                   .map(act -> {
                       ActivityProgress ap = activityProgressMap != null
                               ? activityProgressMap.get(act.getId()) : null;
-                      return ActivityFullResponse.summary(act, ap);
+                      return ActivityFullResponse.from(act, ap);
                   })
                   .collect(Collectors.toList())
                 : Collections.emptyList();

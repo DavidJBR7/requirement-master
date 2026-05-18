@@ -38,23 +38,14 @@ export function useSubmitAnswer() {
   const mutation = useMutation({
     mutationFn: activityService.submitAnswer,
     onSuccess: (data, variables) => {
-      // Invalidar la actividad individual
-      queryClient.invalidateQueries({
-        queryKey: ["activity", variables.activityId],
-      });
-      // Invalidar el roadmap por si acaso
-      queryClient.invalidateQueries({ queryKey: ["roadmap"] });
-      // Invalidar la lección asociada para refrescar las barras de progreso
       if (variables.lessonId) {
-        queryClient.invalidateQueries({
-          queryKey: ["lesson", variables.lessonId],
-        });
+        queryClient.invalidateQueries({ queryKey: ["lesson", variables.lessonId] });
       }
+      queryClient.invalidateQueries({ queryKey: ["roadmap"] });
     },
   });
 
   const submitAnswerAsync = (variables) => mutation.mutateAsync(variables);
-
   return { ...mutation, submitAnswerAsync };
 }
 

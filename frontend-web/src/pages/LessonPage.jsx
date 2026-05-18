@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import {
   useLessonDetail,
-  useActivity,
   useSubmitAnswer,
   useFinalizeLesson,
   useResetLesson,
@@ -11,6 +10,7 @@ import ActivityFactory from "../features/lessons/components/ActivityFactory";
 import LessonResult from "../features/lessons/components/LessonResult";
 import Button from "../shared/components/Button";
 import { X, Info } from "@phosphor-icons/react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function LessonPage() {
   const { id } = useParams();
@@ -18,7 +18,9 @@ export default function LessonPage() {
   const navigate = useNavigate();
   const lessonId = Number(id);
   const shouldStartPractice = searchParams.get("start") === "practice";
+  const queryClient = useQueryClient();
 
+  // Redirigir si no se debe iniciar la práctica
   useEffect(() => {
     if (!shouldStartPractice) {
       navigate("/roadmap", { replace: true });
@@ -42,10 +44,11 @@ export default function LessonPage() {
 
   const justFinalized = useRef(false);
 
-  const completed = lesson.progress?.completedActivities ?? 0;
-  const total = lesson.progress?.totalActivities ?? 1;
+  const completed = lesson?.progress?.completedActivities ?? 0;
+  const total = lesson?.progress?.totalActivities ?? 1;
   const percentage = total > 0 ? Math.floor((completed / total) * 100) : 0;
 
+  // Redirigir si la lección ya fue finalizada (y no se acaba de finalizar en esta sesión)
   useEffect(() => {
     if (
       lesson?.progress?.finalized &&
@@ -59,31 +62,38 @@ export default function LessonPage() {
     }
   }, [lesson, shouldStartPractice, navigate]);
 
+  // Actividades ordenadas; la actividad actual se obtiene directamente del arreglo
   const activities =
     lesson?.activities?.sort((a, b) => a.orderIndex - b.orderIndex) || [];
-  const currentActivitySummary = activities[currentActivityIndex];
-  const { data: currentActivity } = useActivity(currentActivitySummary?.id, {
-    enabled: !!currentActivitySummary?.id,
-  });
+  const currentActivity = activities[currentActivityIndex];
 
-  const handleAnswer = useCallback(
-    async (questionId, userAnswer) => {
-      if (!currentActivitySummary) return null;
-      try {
-        const result = await submitAnswerMutation.submitAnswerAsync({
-          activityId: currentActivitySummary.id,
-          questionId,
-          userAnswer,
-          lessonId,
-        });
-        return result;
-      } catch (error) {
-        console.error("Falló el envío de la respuesta:", error);
-        throw error;
-      }
+  const isActivityCompleted = currentActivity?.completed ?? false;
+
+  // Función que se pasa a las actividades para enviar respuestas al backend
+  const handleSubmitAnswer = useCallback(
+    (activityId, questionId, userAnswer) => {
+      return submitAnswerMutation.submitAnswerAsync({
+        activityId,
+        questionId,
+        userAnswer,
+        lessonId,
+      });
     },
-    [currentActivitySummary, submitAnswerMutation.submitAnswerAsync, lessonId],
+    [submitAnswerMutation, lessonId],
   );
+
+  // Callback cuando una actividad se completa localmente
+  const handleActivityComplete = useCallback(() => {
+    queryClient.setQueryData(["lesson", lessonId], (oldLesson) => {
+      if (!oldLesson) return oldLesson;
+      return {
+        ...oldLesson,
+        activities: oldLesson.activities.map((act) =>
+          act.id === currentActivity.id ? { ...act, completed: true } : act,
+        ),
+      };
+    });
+  }, [queryClient, lessonId, currentActivity]);
 
   const handleNextActivity = () => {
     if (currentActivityIndex < activities.length - 1) {
@@ -187,14 +197,7 @@ export default function LessonPage() {
             <div className="flex items-center gap-4 min-w-0">
               <button
                 onClick={handleBackToRoadmap}
-                className="
-                w-11 h-11 rounded-2xl
-                bg-brand-gradient
-                flex items-center justify-center
-                transition-all duration-200
-                shadow-sm
-                cursor-pointer
-              "
+                className="w-11 h-11 rounded-2xl bg-brand-gradient flex items-center justify-center transition-all duration-200 shadow-sm cursor-pointer"
                 aria-label="Volver al roadmap"
               >
                 <X
@@ -204,12 +207,10 @@ export default function LessonPage() {
                   aria-hidden="true"
                 />
               </button>
-
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-[0.2em] text-blue-600 font-semibold">
                   Modo práctica
                 </p>
-
                 <h1 className="text-base md:text-lg font-bold text-slate-900 truncate">
                   Clase {lesson.id} · {lesson.title}
                 </h1>
@@ -226,24 +227,14 @@ export default function LessonPage() {
                     <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                       Progreso
                     </span>
-
                     <span className="text-[11px] font-bold text-blue-600">
                       {percentage}%
                     </span>
                   </div>
-
                   <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
                     <div
-                      className="
-                      h-full rounded-full
-                      bg-gradient-to-r
-                      from-blue-600
-                      to-blue-400
-                      transition-all duration-500
-                    "
-                      style={{
-                        width: `${percentage}%`,
-                      }}
+                      className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-500"
+                      style={{ width: `${percentage}%` }}
                     />
                   </div>
                 </div>
@@ -254,34 +245,24 @@ export default function LessonPage() {
                     <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                       Score
                     </span>
-
                     <span
-                      className={`
-                      text-[11px] font-bold
-                      ${
+                      className={`text-[11px] font-bold ${
                         lesson.progress?.totalScore >= 70
                           ? "text-emerald-600"
                           : "text-orange-500"
-                      }
-                    `}
+                      }`}
                     >
                       {lesson.progress?.totalScore || 0}
                     </span>
                   </div>
-
                   <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
                     <div
-                      className={`
-                      h-full rounded-full transition-all duration-500
-                      ${
+                      className={`h-full rounded-full transition-all duration-500 ${
                         lesson.progress?.totalScore >= 70
                           ? "bg-gradient-to-r from-emerald-500 to-green-400"
                           : "bg-gradient-to-r from-yellow-400 to-orange-400"
-                      }
-                    `}
-                      style={{
-                        width: `${lesson.progress?.totalScore || 0}%`,
-                      }}
+                      }`}
+                      style={{ width: `${lesson.progress?.totalScore || 0}%` }}
                     />
                   </div>
                 </div>
@@ -295,19 +276,10 @@ export default function LessonPage() {
                     <span>Progreso</span>
                     <span className="font-bold">{percentage}%</span>
                   </div>
-
                   <div className="h-2.5 rounded-full bg-slate-200 overflow-hidden">
                     <div
-                      className="
-                      h-full rounded-full
-                      bg-gradient-to-r
-                      from-blue-600
-                      to-blue-400
-                      transition-all duration-500
-                    "
-                      style={{
-                        width: `${percentage}%`,
-                      }}
+                      className="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-500"
+                      style={{ width: `${percentage}%` }}
                     />
                   </div>
                 </div>
@@ -317,39 +289,30 @@ export default function LessonPage() {
                   <div className="flex justify-between text-xs mb-1 text-slate-500">
                     <div className="flex items-center gap-1">
                       <span>Puntuación</span>
-
                       <div className="relative group">
                         <Info
                           size={14}
                           className="text-slate-500 cursor-help"
                           aria-label="Información sobre puntuación"
                         />
-
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                           Necesitas 70% para aprobar
                           <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900" />
                         </div>
                       </div>
                     </div>
-
                     <span className="font-bold">
                       {lesson.progress?.totalScore || 0}/100
                     </span>
                   </div>
-
                   <div className="h-2.5 rounded-full bg-slate-200 overflow-hidden">
                     <div
-                      className={`
-                      h-full rounded-full
-                      ${
+                      className={`h-full rounded-full ${
                         lesson.progress?.totalScore >= 70
                           ? "bg-gradient-to-r from-emerald-500 to-green-400"
                           : "bg-gradient-to-r from-yellow-400 to-orange-400"
-                      }
-                    `}
-                      style={{
-                        width: `${lesson.progress?.totalScore || 0}%`,
-                      }}
+                      }`}
+                      style={{ width: `${lesson.progress?.totalScore || 0}%` }}
                     />
                   </div>
                 </div>
@@ -361,86 +324,55 @@ export default function LessonPage() {
         {/* MAIN CONTENT */}
         <div className="flex-1 w-full">
           <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
-            <div>
-              {/* CONTENIDO */}
-              <section
-                className="
-                min-w-0
-                min-h-[720px]
-                bg-white
-                rounded-[32px]
-                border border-slate-200
-                shadow-sm
-                overflow-hidden
-                flex flex-col
-              "
-                aria-labelledby="activity-title"
-              >
-                {/* header actividad */}
-                <header className="border-b border-slate-100 px-5 py-2 md:px-8">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h2
-                      id="activity-title"
-                      className="text-sm uppercase tracking-[0.2em] text-blue-600 font-semibold flex-1 min-w-[120px] break-words"
-                    >
-                      Actividad{" "}
-                      {currentActivity?.title || `${currentActivityIndex + 1}`}
-                    </h2>
-
-                    <div
-                      className="
-                      px-2 md:px-4 py-2 rounded-2xl
-                      bg-brand-gradient
-                      text-sm font-medium text-slate-100
-                      whitespace-nowrap
-                    "
-                      aria-label={`Actividad ${currentActivityIndex + 1} de ${activities.length}`}
-                    >
-                      {currentActivityIndex + 1} de {activities.length}
-                    </div>
+            <section
+              className="min-w-0 min-h-[720px] bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden flex flex-col"
+              aria-labelledby="activity-title"
+            >
+              <header className="border-b border-slate-100 px-5 py-2 md:px-8">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h2
+                    id="activity-title"
+                    className="text-sm uppercase tracking-[0.2em] text-blue-600 font-semibold flex-1 min-w-[120px] break-words"
+                  >
+                    Actividad{" "}
+                    {currentActivity?.title || `${currentActivityIndex + 1}`}
+                  </h2>
+                  <div
+                    className="px-2 md:px-4 py-2 rounded-2xl bg-brand-gradient text-sm font-medium text-slate-100 whitespace-nowrap"
+                    aria-label={`Actividad ${currentActivityIndex + 1} de ${activities.length}`}
+                  >
+                    {currentActivityIndex + 1} de {activities.length}
                   </div>
-                </header>
-
-                {/* BODY */}
-                <div className="flex-1 overflow-x-auto">
-                  {currentActivity && (
-                    <ActivityFactory
-                      activity={currentActivity}
-                      onAnswer={handleAnswer}
-                    />
-                  )}
                 </div>
+              </header>
 
-                {/* FOOTER */}
-                <footer className="border-t border-slate-100 px-4 py-4 flex items-center justify-center">
-                  {currentActivity?.currentProgress?.completed ? (
-                    <Button
-                      onClick={handleNextActivity}
-                      className="
-                      px-10
-                      bg-gradient-to-r
-                      from-blue-600
-                      to-cyan-500
-                      text-white
-                      font-semibold
-                      shadow-md
-                      hover:shadow-lg
-                      transition-all
-                      !rounded-2xl
-                    "
-                    >
-                      {currentActivityIndex < activities.length - 1
-                        ? "Continuar"
-                        : "Finalizar"}
-                    </Button>
-                  ) : (
-                    <div className="flex items-center text-sm text-slate-400 px-2">
-                      Completa la actividad para continuar
-                    </div>
-                  )}
-                </footer>
-              </section>
-            </div>
+              <div className="flex-1 overflow-x-auto">
+                {currentActivity && (
+                  <ActivityFactory
+                    activity={currentActivity}
+                    onSubmitAnswer={handleSubmitAnswer}
+                    onActivityComplete={handleActivityComplete}
+                  />
+                )}
+              </div>
+
+              <footer className="border-t border-slate-100 px-4 py-4 flex items-center justify-center">
+                {isActivityCompleted ? (
+                  <Button
+                    onClick={handleNextActivity}
+                    className="px-10 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold shadow-md hover:shadow-lg transition-all !rounded-2xl"
+                  >
+                    {currentActivityIndex < activities.length - 1
+                      ? "Continuar"
+                      : "Finalizar"}
+                  </Button>
+                ) : (
+                  <div className="flex items-center text-sm text-slate-400 px-2">
+                    Completa la actividad para continuar
+                  </div>
+                )}
+              </footer>
+            </section>
           </div>
         </div>
       </div>
