@@ -1,7 +1,8 @@
 package com.requirementmaster.backend.application.service;
 
-import com.requirementmaster.backend.application.dto.response.LessonResultResponse;
+import com.requirementmaster.backend.application.dto.response.LessonDetailResponse;
 import com.requirementmaster.backend.domain.entities.*;
+import com.requirementmaster.backend.domain.enums.LessonProgressStatus;
 import com.requirementmaster.backend.domain.exceptions.BusinessException;
 import com.requirementmaster.backend.domain.exceptions.ResourceNotFoundException;
 import com.requirementmaster.backend.infrastructure.persistence.repository.*;
@@ -21,9 +22,8 @@ public class ProgressService {
     private final JpaLessonProgressRepository lessonProgressRepository;
     private final JpaActivityProgressRepository activityProgressRepository;
     private final JpaAnswerRecordRepository answerRecordRepository;
-    private final JpaGlobalProgressRepository globalProgressRepository;
 
-    public LessonResultResponse finalizeLesson(Long lessonId, Long userId) {
+    public LessonDetailResponse finalizeLesson(Long lessonId, Long userId) {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson", lessonId));
 
@@ -37,7 +37,6 @@ public class ProgressService {
 
         int totalScore = lp.getTotalScore();
         boolean passed = totalScore >= 70;
-        boolean wasAlreadyCompleted = lp.isCompleted();
 
         List<ActivityProgress> activities = activityProgressRepository
                 .findByUserIdAndActivity_LessonId(userId, lessonId);
@@ -50,31 +49,30 @@ public class ProgressService {
         }
         lp.setTotalXpEarned(lp.getTotalXpEarned() + xpEarnedThisAttempt);
 
-        if (passed && !lp.isCompleted()) {
-            lp.setCompleted(true);
-            lp.setCompletedAt(LocalDateTime.now());
+        if (passed) {
+            lp.setStatus(LessonProgressStatus.COMPLETED);
+        } else {
+            lp.setStatus(LessonProgressStatus.AVAILABLE);
         }
         lessonProgressRepository.save(lp);
 
-        GlobalProgress gp = globalProgressRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("GlobalProgress not initialized"));
-        gp.setXpTotal(gp.getXpTotal() + xpEarnedThisAttempt);
-        gp.setLastActivityDate(LocalDateTime.now());
-
-        if (!lesson.isExam() && passed && !wasAlreadyCompleted) {
-            gp.setLessonsCompleted(gp.getLessonsCompleted() + 1);
-        }
-        if (lesson.isExam() && passed) {
-            gp.setExamPassed(true);
-        }
-        globalProgressRepository.save(gp);
-
-        int timeTakenSeconds = 0;
-        if (lp.getStartedAt() != null) {
-            timeTakenSeconds = (int) java.time.Duration.between(lp.getStartedAt(), LocalDateTime.now()).getSeconds();
-        }
-
-        return LessonResultResponse.of(lesson, lp, xpEarnedThisAttempt, timeTakenSeconds, gp.getLessonsCompleted());
+        return LessonDetailResponse.builder()
+                .id(lesson.getId())
+                .title(lesson.getTitle())
+                .description(lesson.getDescription())
+                .orderIndex(lesson.getOrderIndex())
+                .isExam(lesson.isExam())
+                .activities(null)
+                .status(lp.getStatus())
+                .finalized(lp.isFinalized())
+                .totalScore(lp.getTotalScore())
+                .bestScore(lp.getBestScore())
+                .totalXpEarned(lp.getTotalXpEarned())
+                .totalActivities(lp.getTotalActivities())
+                .completedActivities(lp.getCompletedActivities())
+                .attempts(lp.getAttempts())
+                .lastActivityOrder(lp.getLastActivityOrder())
+                .build();
     }
 
     public void resetLesson(Long lessonId, Long userId) {
@@ -93,12 +91,11 @@ public class ProgressService {
         }
 
         lp.setTotalScore(0);
-        lp.setCompleted(false);
-        lp.setCompletedAt(null);
+        lp.setStatus(LessonProgressStatus.AVAILABLE);
         lp.setCompletedActivities(0);
         lp.setLastActivityOrder(0);
         lp.setFinalized(false);
-        lp.setStartedAt(LocalDateTime.now());
+        lp.setTotalXpEarned(0);
         lessonProgressRepository.save(lp);
     }
 }

@@ -2,6 +2,7 @@ package com.requirementmaster.backend.application.service;
 
 import com.requirementmaster.backend.application.dto.response.*;
 import com.requirementmaster.backend.domain.entities.*;
+import com.requirementmaster.backend.domain.enums.LessonProgressStatus;
 import com.requirementmaster.backend.domain.exceptions.BusinessException;
 import com.requirementmaster.backend.domain.exceptions.ResourceNotFoundException;
 import com.requirementmaster.backend.infrastructure.persistence.repository.*;
@@ -21,7 +22,6 @@ public class LessonService {
     private final JpaLessonProgressRepository lessonProgressRepository;
     private final JpaActivityProgressRepository activityProgressRepository;
     private final JpaActivityRepository activityRepository;
-    // private final LessonMapper lessonMapper;  // ELIMINADO
 
     public List<RoadmapLessonResponse> getRoadmap(Long userId) {
         List<Lesson> lessons = lessonRepository.findAllByOrderByOrderIndexAsc();
@@ -43,13 +43,15 @@ public class LessonService {
                 status = RoadmapLessonResponse.LessonStatus.LOCKED;
             } else if (progress == null) {
                 status = RoadmapLessonResponse.LessonStatus.AVAILABLE;
-            } else if (progress.isCompleted() || (progress.getBestScore() >= 70)) {
+            } else if (progress.getStatus() == LessonProgressStatus.COMPLETED) {
                 status = RoadmapLessonResponse.LessonStatus.COMPLETED;
                 bestScore = progress.getBestScore();
                 totalXp = progress.getTotalXpEarned();
-            } else if (progress.getStartedAt() != null && !progress.isFinalized()) {
+            } else if (progress.getStatus() == LessonProgressStatus.IN_PROGRESS && !progress.isFinalized()) {
                 status = RoadmapLessonResponse.LessonStatus.IN_PROGRESS;
-                currentPercent = progress.getTotalScore();
+                int completed = progress.getCompletedActivities();
+                int total = progress.getTotalActivities();
+                currentPercent = total > 0 ? (completed * 100) / total : 0;
             } else {
                 status = RoadmapLessonResponse.LessonStatus.AVAILABLE;
             }
@@ -57,7 +59,7 @@ public class LessonService {
             roadmap.add(RoadmapLessonResponse.of(lesson, status, currentPercent, bestScore, totalXp));
 
             if (!lesson.isExam()) {
-                previousCompleted = progress != null && progress.isCompleted();
+                previousCompleted = (progress != null && progress.getStatus() == LessonProgressStatus.COMPLETED);
             }
         }
 

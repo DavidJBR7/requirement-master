@@ -2,7 +2,6 @@ package com.requirementmaster.backend.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,15 +38,6 @@ public class ActivityProgress {
     @Builder.Default
     private int xpEarned = 0;        // XP total obtenida en esta actividad (se asigna al finalizar)
 
-    @Column(nullable = false)
-    @Builder.Default
-    private int attempts = 0;
-
-    private int timeTakenSeconds;
-
-    private LocalDateTime lastAttemptAt;
-
-    // Relación con el detalle de cada respuesta
     @Builder.Default
     @OneToMany(mappedBy = "activityProgress", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AnswerRecord> answers = new ArrayList<>();

@@ -27,12 +27,10 @@ public class AuthService {
     private final JpaUserRepository userRepository;
     private final JpaRefreshTokenRepository refreshTokenRepository;
     private final JpaPasswordResetTokenRepository passwordResetTokenRepository;
-    private final JpaGlobalProgressRepository globalProgressRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
     private final EmailService emailService;
-    // private final AuthMapper authMapper;  // ELIMINADO
 
     public MessageResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -48,15 +46,7 @@ public class AuthService {
                 .fullName(request.getFullName().trim())
                 .username(request.getUsername().trim())
                 .build();
-        user = userRepository.save(user);
-
-        GlobalProgress globalProgress = GlobalProgress.builder()
-                .user(user)
-                .xpTotal(0)
-                .lessonsCompleted(0)
-                .examPassed(false)
-                .build();
-        globalProgressRepository.save(globalProgress);
+        userRepository.save(user);
 
         return new MessageResponse("Usuario registrado exitosamente. Por favor inicia sesión.");
     }

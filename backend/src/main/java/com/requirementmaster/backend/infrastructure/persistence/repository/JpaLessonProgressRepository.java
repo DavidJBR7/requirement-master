@@ -1,6 +1,7 @@
 package com.requirementmaster.backend.infrastructure.persistence.repository;
 
 import com.requirementmaster.backend.domain.entities.LessonProgress;
+import com.requirementmaster.backend.domain.enums.LessonProgressStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,5 +15,5 @@ public interface JpaLessonProgressRepository extends JpaRepository<LessonProgres
 
     List<LessonProgress> findByUserId(Long userId);
 
-    long countByUserIdAndCompletedTrue(Long userId);
+    long countByUserIdAndStatus(Long userId, LessonProgressStatus status);
 }

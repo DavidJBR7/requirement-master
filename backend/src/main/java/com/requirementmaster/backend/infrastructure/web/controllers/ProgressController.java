@@ -1,6 +1,6 @@
 package com.requirementmaster.backend.infrastructure.web.controllers;
 
-import com.requirementmaster.backend.application.dto.response.LessonResultResponse;
+import com.requirementmaster.backend.application.dto.response.LessonDetailResponse;
 import com.requirementmaster.backend.application.dto.response.MessageResponse;
 import com.requirementmaster.backend.application.service.ProgressService;
 import com.requirementmaster.backend.infrastructure.security.UserPrincipal;
@@ -17,9 +17,9 @@ public class ProgressController {
     private final ProgressService progressService;
 
     @PostMapping("/lessons/{lessonId}/finalize")
-    public ResponseEntity<LessonResultResponse> finalizeLesson(@AuthenticationPrincipal UserPrincipal principal,
+    public ResponseEntity<LessonDetailResponse> finalizeLesson(@AuthenticationPrincipal UserPrincipal principal,
                                                                @PathVariable Long lessonId) {
-        LessonResultResponse result = progressService.finalizeLesson(lessonId, principal.getId());
+        LessonDetailResponse result = progressService.finalizeLesson(lessonId, principal.getId());
         return ResponseEntity.ok(result);
     }
 

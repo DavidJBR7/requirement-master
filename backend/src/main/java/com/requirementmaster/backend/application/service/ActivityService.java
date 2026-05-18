@@ -5,6 +5,7 @@ import com.requirementmaster.backend.application.dto.response.ActivityFullRespon
 import com.requirementmaster.backend.application.dto.response.AnswerRecordResponse;
 import com.requirementmaster.backend.domain.entities.*;
 import com.requirementmaster.backend.domain.enums.ActivityType;
+import com.requirementmaster.backend.domain.enums.LessonProgressStatus;
 import com.requirementmaster.backend.domain.exceptions.BusinessException;
 import com.requirementmaster.backend.domain.exceptions.ResourceNotFoundException;
 import com.requirementmaster.backend.infrastructure.persistence.repository.*;
@@ -16,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -30,7 +30,6 @@ public class ActivityService {
     private final JpaActivityProgressRepository activityProgressRepository;
     private final JpaLessonProgressRepository lessonProgressRepository;
     private final JpaAnswerRecordRepository answerRecordRepository;
-    private final JpaGlobalProgressRepository globalProgressRepository;
     private final EntityManager entityManager;
 
     private static final ConcurrentHashMap<String, Object> progressLocks = new ConcurrentHashMap<>();
@@ -77,7 +76,7 @@ public class ActivityService {
             lessonProgress = LessonProgress.builder()
                     .user(getUserReference(userId))
                     .lesson(lesson)
-                    .startedAt(LocalDateTime.now())
+                    .status(LessonProgressStatus.IN_PROGRESS)
                     .totalActivities(lesson.getActivities().size())
                     .build();
             lessonProgress = lessonProgressRepository.save(lessonProgress);
@@ -100,26 +99,15 @@ public class ActivityService {
             answerRecordRepository.save(record);
         }
 
-        activityProgress.setAttempts(activityProgress.getAttempts() + 1);
-        activityProgress.setLastAttemptAt(LocalDateTime.now());
         checkActivityCompletion(activity, activityProgress);
         activityProgressRepository.save(activityProgress);
 
         updateLessonProgress(lessonProgress, activityProgress, lesson);
 
-        // Antes: records.stream().map(this::mapToResponse)
         return records.stream()
                 .map(AnswerRecordResponse::from)
                 .collect(Collectors.toList());
     }
-
-    // ... resto de métodos (evaluateAnswer, evaluateTrueFalse, etc.) se mantienen exactamente igual ...
-
-    // =====================
-    // Método privado mapToResponse ELIMINADO
-    // =====================
-    // Queda el resto igual que en la versión original
-    // (incluyendo los métodos evaluate*, checkActivityCompletion, etc.)
 
     private List<AnswerRecord> evaluateAnswer(Activity activity, String questionId,
                                               JsonNode userAnswer, ActivityProgress activityProgress) {
@@ -158,8 +146,6 @@ public class ActivityService {
         }
     }
 
-    // ... (todos los demás métodos privados se quedan igual que en el código original) ...
-    // Se incluyen aquí por completitud, pero están sin cambios.
     private List<AnswerRecord> evaluateTrueFalse(Map<String, Object> item, JsonNode answer, ActivityProgress ap) {
         boolean correct = answer.asBoolean() == (boolean) item.get("correctAnswer");
         return singleRecord(item, answer, correct, ap);

@@ -1,8 +1,8 @@
 package com.requirementmaster.backend.domain.entities;
 
+import com.requirementmaster.backend.domain.enums.LessonProgressStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "lesson_progress", uniqueConstraints = {
@@ -25,12 +25,10 @@ public class LessonProgress {
     @JoinColumn(name = "lesson_id", nullable = false)
     private Lesson lesson;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     @Builder.Default
-    private boolean completed = false;   // Alcanzó ≥70% alguna vez
-
-    private LocalDateTime startedAt;
-    private LocalDateTime completedAt;
+    private LessonProgressStatus status = LessonProgressStatus.LOCKED;
 
     @Column(nullable = false)
     @Builder.Default
