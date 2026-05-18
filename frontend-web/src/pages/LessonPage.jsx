@@ -44,17 +44,13 @@ export default function LessonPage() {
 
   const justFinalized = useRef(false);
 
-  const completed = lesson?.progress?.completedActivities ?? 0;
-  const total = lesson?.progress?.totalActivities ?? 1;
+  const completed = lesson?.completedActivities ?? 0;
+  const total = lesson?.totalActivities ?? 1;
   const percentage = total > 0 ? Math.floor((completed / total) * 100) : 0;
 
   // Redirigir si la lección ya fue finalizada (y no se acaba de finalizar en esta sesión)
   useEffect(() => {
-    if (
-      lesson?.progress?.finalized &&
-      shouldStartPractice &&
-      !justFinalized.current
-    ) {
+    if (lesson?.finalized && shouldStartPractice && !justFinalized.current) {
       navigate("/roadmap", { replace: true });
     }
     if (justFinalized.current) {
@@ -247,22 +243,22 @@ export default function LessonPage() {
                     </span>
                     <span
                       className={`text-[11px] font-bold ${
-                        lesson.progress?.totalScore >= 70
+                        (lesson.totalScore || 0) >= 70
                           ? "text-emerald-600"
                           : "text-orange-500"
                       }`}
                     >
-                      {lesson.progress?.totalScore || 0}
+                      {lesson.totalScore || 0}
                     </span>
                   </div>
                   <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
-                        lesson.progress?.totalScore >= 70
+                        (lesson.totalScore || 0) >= 70
                           ? "bg-gradient-to-r from-emerald-500 to-green-400"
                           : "bg-gradient-to-r from-yellow-400 to-orange-400"
                       }`}
-                      style={{ width: `${lesson.progress?.totalScore || 0}%` }}
+                      style={{ width: `${lesson.totalScore || 0}%` }}
                     />
                   </div>
                 </div>
@@ -302,17 +298,17 @@ export default function LessonPage() {
                       </div>
                     </div>
                     <span className="font-bold">
-                      {lesson.progress?.totalScore || 0}/100
+                      {lesson.totalScore || 0}/100
                     </span>
                   </div>
                   <div className="h-2.5 rounded-full bg-slate-200 overflow-hidden">
                     <div
                       className={`h-full rounded-full ${
-                        lesson.progress?.totalScore >= 70
+                        (lesson.totalScore || 0) >= 70
                           ? "bg-gradient-to-r from-emerald-500 to-green-400"
                           : "bg-gradient-to-r from-yellow-400 to-orange-400"
                       }`}
-                      style={{ width: `${lesson.progress?.totalScore || 0}%` }}
+                      style={{ width: `${lesson.totalScore || 0}%` }}
                     />
                   </div>
                 </div>

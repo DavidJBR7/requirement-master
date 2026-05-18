@@ -14,7 +14,7 @@ export default function TheoryView({
     lessonTheoryMap[lesson.id] ||
     `<p>Contenido teórico no disponible aún para esta lección.</p>`;
 
-  const isFinalized = lesson.progress?.finalized;
+  const isFinalized = lesson.finalized;
 
   return (
     <section

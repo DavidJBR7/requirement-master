@@ -56,7 +56,7 @@ export function useFinalizeLesson() {
     mutationFn: progressService.finalizeLesson,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["roadmap"] });
-      queryClient.invalidateQueries({ queryKey: ["lesson", data.lessonId] });
+      queryClient.invalidateQueries({ queryKey: ["lesson", data.id] });
     },
   });
 }
