@@ -30,9 +30,9 @@ export default function RoadmapCard({ lesson, onStart }) {
   const cardStyles = isLocked
     ? "bg-gray-100 border-gray-200 opacity-70"
     : lesson.status === "COMPLETED"
-      ? "bg-green-50 border-green-200"
+      ? "bg-green-50 border-green-300"
       : lesson.status === "IN_PROGRESS"
-        ? "bg-yellow-50 border-yellow-200"
+        ? "bg-yellow-50 border-yellow-300"
         : "bg-white border-blue-200 active:scale-[0.99]";
 
   return (
@@ -51,7 +51,7 @@ export default function RoadmapCard({ lesson, onStart }) {
             lesson.status === "COMPLETED" ? "bg-green-100 text-green-700" : ""
           } ${
             lesson.status === "IN_PROGRESS"
-              ? "bg-yellow-100 text-yellow-700"
+              ? "bg-yellow-300 text-yellow-700"
               : ""
           } ${lesson.status === "LOCKED" ? "bg-gray-200 text-gray-500" : ""} ${lesson.status === "AVAILABLE" ? "bg-blue-100 text-blue-700" : ""}`}
         >
@@ -103,7 +103,7 @@ export default function RoadmapCard({ lesson, onStart }) {
                   <span>{lesson.currentProgressPercent}%</span>
                 </div>
 
-                <div className="h-2 sm:h-2.5 rounded-full bg-yellow-100 overflow-hidden">
+                <div className="h-2 sm:h-2.5 rounded-full bg-yellow-200 overflow-hidden">
                   <div
                     className="h-full rounded-full bg-yellow-400 sm:bg-gradient-to-r sm:from-yellow-400 sm:to-yellow-500 transition-all duration-500 sm:duration-700"
                     style={{
