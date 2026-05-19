@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import {
   useLessonDetail,
@@ -19,6 +19,7 @@ export default function LessonPage() {
   const lessonId = Number(id);
   const shouldStartPractice = searchParams.get("start") === "practice";
   const queryClient = useQueryClient();
+  const initialIndexSet = useRef(false);
 
   // Redirigir si no se debe iniciar la práctica
   useEffect(() => {
@@ -65,12 +66,26 @@ export default function LessonPage() {
     }
   }, [lesson, shouldStartPractice, navigate]);
 
-  // Actividades ordenadas; la actividad actual se obtiene directamente del arreglo
-  const activities =
-    lesson?.activities?.sort((a, b) => a.orderIndex - b.orderIndex) || [];
+  // Actividades ordenadas
+  const activities = useMemo(() => {
+    if (!lesson?.activities) return [];
+    return [...lesson.activities].sort((a, b) => a.orderIndex - b.orderIndex);
+  }, [lesson]);
+
   const currentActivity = activities[currentActivityIndex];
 
   const isActivityCompleted = currentActivity?.completed ?? false;
+
+  // Iniciar desde la primera actividad no completada (solo al cargar la lección por primera vez)
+  useEffect(() => {
+    if (!initialIndexSet.current && activities.length > 0) {
+      const firstIncompleteIdx = activities.findIndex((act) => !act.completed);
+      if (firstIncompleteIdx !== -1) {
+        setCurrentActivityIndex(firstIncompleteIdx);
+      }
+      initialIndexSet.current = true;
+    }
+  }, [activities]);
 
   // Función que se pasa a las actividades para enviar respuestas al backend
   const handleSubmitAnswer = useCallback(
