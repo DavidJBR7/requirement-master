@@ -104,6 +104,7 @@ export default function RoadmapPage() {
         lessonId={selectedLessonId}
         isOpen={modalOpen}
         onClose={handleCloseModal}
+        lessonData={lessons?.find((l) => l.id === selectedLessonId)}
       />
     </>
   );

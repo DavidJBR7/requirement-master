@@ -34,6 +34,13 @@ export default function LessonPage() {
   } = useLessonDetail(lessonId, {
     enabled: !!lessonId && shouldStartPractice,
   });
+
+  useEffect(() => {
+    if (lesson) {
+      console.log("Datos de la lección:", lesson);
+    }
+  }, [lesson]);
+
   const submitAnswerMutation = useSubmitAnswer();
   const finalizeMutation = useFinalizeLesson();
   const resetMutation = useResetLesson();
