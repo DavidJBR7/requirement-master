@@ -212,10 +212,10 @@ export default function LessonPage() {
         <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between gap-4">
             {/* izquierda */}
-            <div className="flex items-center gap-4 min-w-0">
+            <div className="flex items-center gap-2 md:gap-4 min-w-0">
               <button
                 onClick={handleBackToRoadmap}
-                className="w-11 h-11 rounded-2xl bg-brand-gradient flex items-center justify-center transition-all duration-200 shadow-sm cursor-pointer"
+                className="w-12 h-8 rounded-2xl bg-brand-gradient flex items-center justify-center transition-all duration-200 shadow-sm cursor-pointer"
                 aria-label="Volver al roadmap"
               >
                 <X

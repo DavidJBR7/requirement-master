@@ -50,6 +50,8 @@ function ConnectionLine({
         pointerEvents: evaluated ? "none" : "auto",
         opacity: faded ? 0.2 : 1,
       }}
+      tabIndex={-1}
+      aria-hidden="true"
     >
       <path
         d={path}
@@ -81,7 +83,7 @@ function ConnectionLine({
 ========================================================= */
 function ConnectionEndpoint({ x, y, color }) {
   return (
-    <g style={{ pointerEvents: "none" }}>
+    <g style={{ pointerEvents: "none" }} aria-hidden="true">
       <circle cx={x} cy={y} r={10} fill={color} opacity={0.15} />
       <circle cx={x} cy={y} r={6} fill={color} />
     </g>
@@ -145,7 +147,7 @@ export default function MatchPairsActivity({
   const defRefs = useRef({});
   const conceptRefs = useRef({});
   const animationFrameRef = useRef();
-  const initialAnswersLoaded = useRef(false); // Control para no sobreescribir
+  const initialAnswersLoaded = useRef(false);
 
   /* =========================================================
      LOAD PREVIOUS ANSWERS (solo una vez, sin evaluar)
@@ -283,13 +285,11 @@ export default function MatchPairsActivity({
   const handleDefinitionClick = (defId) => {
     if (evaluated) return;
 
-    // Si se pulsa la misma definición activa → cancelar arrastre
     if (activeDefId === defId) {
       setActiveDefId(null);
       return;
     }
 
-    // Si la definición ya tiene una conexión → desconectar y activar arrastre
     if (connections[defId]) {
       setConnections((prev) => {
         const next = { ...prev };
@@ -300,36 +300,28 @@ export default function MatchPairsActivity({
       return;
     }
 
-    // Definición libre → empezar a arrastrar
     setActiveDefId(defId);
   };
 
   const handleConceptClick = (conceptId) => {
     if (evaluated) return;
 
-    // Buscar si este concepto ya está conectado a alguna definición
     const connectedDefId = Object.keys(connections).find(
       (defId) => connections[defId] === conceptId,
     );
 
-    // Si el concepto ya está conectado
     if (connectedDefId) {
-      // Desconectar la relación
       setConnections((prev) => {
         const next = { ...prev };
         delete next[connectedDefId];
         return next;
       });
-
-      // Activar arrastre desde esa definición
       setActiveDefId(connectedDefId);
       return;
     }
 
-    // Si no hay definición activa, no se puede conectar
     if (!activeDefId) return;
 
-    // Evitar que un concepto ya conectado a otra definición se duplique
     const existingDef = Object.keys(connections).find(
       (defId) => connections[defId] === conceptId,
     );
@@ -341,13 +333,11 @@ export default function MatchPairsActivity({
       });
     }
 
-    // Conectar la definición activa con este concepto
     setConnections((prev) => ({
       ...prev,
       [activeDefId]: conceptId,
     }));
 
-    // Persistir inmediatamente en el servidor
     onSubmitAnswer(activityId, activeDefId, conceptId).catch((error) =>
       console.error("Error guardando respuesta:", error),
     );
@@ -359,7 +349,6 @@ export default function MatchPairsActivity({
   const handleLineClick = (defId) => {
     if (evaluated) return;
 
-    // Desconectar y activar arrastre para esa definición
     setConnections((prev) => {
       const next = { ...prev };
       delete next[defId];
@@ -369,7 +358,7 @@ export default function MatchPairsActivity({
   };
 
   /* =========================================================
-     EVALUATE LOCALLY (Validar respuestas)
+     EVALUATE LOCALLY
   ========================================================= */
   const handleEvaluate = () => {
     if (evaluated) return;
@@ -388,7 +377,6 @@ export default function MatchPairsActivity({
     const allCorrect = Object.values(newRecords).every((r) => r.correct);
     playSound(allCorrect ? "correct" : "wrong");
 
-    // Notificar al padre que la actividad terminó
     onActivityComplete();
   };
 
@@ -402,21 +390,29 @@ export default function MatchPairsActivity({
      RENDER
   ========================================================= */
   return (
-    <div
+    <section
       ref={containerRef}
+      aria-label="Actividad de emparejamiento"
       className="
         relative overflow-hidden border border-slate-200
         bg-gradient-to-br from-slate-50 via-white to-blue-50
       "
     >
       {/* BG BLOBS */}
-      <div className="absolute -top-24 -right-24 w-80 h-80 bg-cyan-300/20 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl" />
+      <div
+        aria-hidden="true"
+        className="absolute -top-24 -right-24 w-80 h-80 bg-cyan-300/20 rounded-full blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl"
+      />
 
       {/* SVG LINES */}
       <svg
         className="absolute inset-0 z-10"
         style={{ width: "100%", height: "100%", pointerEvents: "none" }}
+        aria-hidden="true"
       >
         {/* USER CONNECTIONS */}
         {Object.entries(linePositions).map(([defId, pos]) => {
@@ -437,7 +433,7 @@ export default function MatchPairsActivity({
           );
         })}
 
-        {/* CORRECT ANSWERS (mostradas tras evaluar) */}
+        {/* CORRECT ANSWERS */}
         {showCorrectAnswers &&
           definitions.map((item) => {
             const defEl = defRefs.current[item.id];
@@ -473,140 +469,165 @@ export default function MatchPairsActivity({
       </svg>
 
       {/* CONTENT */}
-      <div className="relative z-20 flex flex-col lg:flex-row gap-80 p-5 lg:p-8">
+      <div className="relative z-20 flex flex-row gap-30 sm:gap-40 lg:gap-80 p-2 sm:p-4 lg:p-8">
         {/* LEFT – CONCEPTOS */}
-        <div className="flex-1">
-          <div className="mb-5 flex items-center gap-3">
-            <div>
-              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600">
-                Conceptos
-              </h2>
-              <p className="text-sm text-slate-500">Selecciona un concepto</p>
-            </div>
-          </div>
+        <section aria-labelledby="concepts-heading" className="flex-1 min-w-0">
+          <header className="mb-3 sm:mb-5">
+            <h2
+              id="concepts-heading"
+              className="text-xs sm:text-sm font-bold uppercase tracking-[0.15em] text-blue-600"
+            >
+              Conceptos
+            </h2>
+            <p className="text-xs text-slate-500">Selecciona un concepto</p>
+          </header>
 
-          <div className="space-y-4">
+          <ul className="space-y-2 sm:space-y-4" role="list">
             {definitions.map((def) => {
               const isConnected = !!connections[def.id];
               const record = answerRecords[def.id];
               const isCorrect = record?.correct;
 
               return (
-                <motion.div
-                  key={def.id}
-                  layout
-                  ref={(el) => (defRefs.current[def.id] = el)}
-                  onClick={() => handleDefinitionClick(def.id)}
-                  whileHover={{ y: -4, scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`
-                    group relative overflow-hidden rounded-3xl border p-5 cursor-pointer transition-all duration-300
-                    ${
-                      evaluated
-                        ? isCorrect
-                          ? "border-emerald-300 bg-emerald-50 shadow-lg shadow-emerald-100"
-                          : "border-red-300 bg-red-50 shadow-lg shadow-red-100"
-                        : isConnected
-                          ? "border-cyan-400 bg-cyan-50 shadow-xl shadow-cyan-100"
-                          : activeDefId === def.id
-                            ? "border-blue-500 bg-blue-100 shadow-2xl scale-[1.02]"
-                            : "border-slate-300 bg-white/90 hover:border-blue-300 hover:shadow-xl"
-                    }
-                  `}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent pointer-events-none" />
-                  <div className="relative z-10 flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-semibold text-slate-900 text-lg">
-                        {def.prompt}
-                      </h3>
-                      <p className="mt-1 text-sm text-slate-500">
-                        Conecta con la definición correcta
-                      </p>
+                <li key={def.id}>
+                  <motion.button
+                    type="button"
+                    layout
+                    ref={(el) => (defRefs.current[def.id] = el)}
+                    onClick={() => handleDefinitionClick(def.id)}
+                    whileHover={{ y: -4, scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`
+                      w-full text-left group relative overflow-hidden rounded-2xl sm:rounded-3xl border p-3 sm:p-5 transition-all duration-300
+                      focus:outline-none focus:ring-2 focus:ring-blue-500
+                      ${
+                        evaluated
+                          ? isCorrect
+                            ? "border-emerald-300 bg-emerald-50 shadow-lg shadow-emerald-100"
+                            : "border-red-300 bg-red-50 shadow-lg shadow-red-100"
+                          : isConnected
+                            ? "border-cyan-400 bg-cyan-50 shadow-xl shadow-cyan-100"
+                            : activeDefId === def.id
+                              ? "border-blue-500 bg-blue-100 shadow-2xl scale-[1.02]"
+                              : "border-slate-300 bg-white/90 hover:border-blue-300 hover:shadow-xl"
+                      }
+                    `}
+                    aria-label={`Concepto: ${def.prompt}. ${
+                      isConnected
+                        ? "Conectado, clic para desconectar"
+                        : "Clic para seleccionar y arrastrar"
+                    }`}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent pointer-events-none" />
+                    <div className="relative z-10 flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold text-slate-900 text-base sm:text-lg">
+                          {def.prompt}
+                        </h3>
+                        <p className="mt-1 text-xs sm:text-sm text-slate-500">
+                          Conecta con la definición correcta
+                        </p>
+                      </div>
+                      <AnimatePresence mode="wait">
+                        {evaluated && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.6 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.6 }}
+                            className="hidden sm:flex items-center self-center"
+                          >
+                            {isCorrect ? (
+                              <CheckCircle
+                                size={24}
+                                weight="fill"
+                                className="text-emerald-500 flex-shrink-0"
+                              />
+                            ) : (
+                              <XCircle
+                                size={24}
+                                weight="fill"
+                                className="text-red-500 flex-shrink-0"
+                              />
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                    <AnimatePresence mode="wait">
-                      {evaluated && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.6 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.6 }}
-                        >
-                          {isCorrect ? (
-                            <CheckCircle
-                              size={28}
-                              weight="fill"
-                              className="text-emerald-500"
-                            />
-                          ) : (
-                            <XCircle
-                              size={28}
-                              weight="fill"
-                              className="text-red-500"
-                            />
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
+                  </motion.button>
+                </li>
               );
             })}
-          </div>
-        </div>
+          </ul>
+        </section>
 
         {/* RIGHT – DEFINICIONES */}
-        <div className="flex-1">
-          <div className="mb-5">
-            <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-600">
+        <section
+          aria-labelledby="definitions-heading"
+          className="flex-1 min-w-0"
+        >
+          <header className="mb-3 sm:mb-5">
+            <h2
+              id="definitions-heading"
+              className="text-xs sm:text-sm font-bold uppercase tracking-[0.15em] text-cyan-600"
+            >
               Definiciones
             </h2>
-            <p className="text-sm text-slate-500 mt-1">
-              Relaciona cada concepto
-            </p>
-          </div>
+            <p className="text-xs text-slate-500">Relaciona cada concepto</p>
+          </header>
 
-          <div className="space-y-4">
+          <ul className="space-y-2 sm:space-y-4" role="list">
             {concepts.map((concept) => {
               const connectedDef = Object.keys(connections).find(
                 (defId) => connections[defId] === concept.id,
               );
 
               return (
-                <motion.div
-                  key={concept.id}
-                  layout
-                  ref={(el) => (conceptRefs.current[concept.id] = el)}
-                  onClick={() => handleConceptClick(concept.id)}
-                  whileHover={{ y: -4, scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`
-                    relative overflow-hidden rounded-3xl border p-5 cursor-pointer transition-all duration-300
-                    ${
+                <li key={concept.id}>
+                  <motion.button
+                    type="button"
+                    layout
+                    ref={(el) => (conceptRefs.current[concept.id] = el)}
+                    onClick={() => handleConceptClick(concept.id)}
+                    whileHover={{ y: -4, scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`
+                      w-full text-left relative overflow-hidden rounded-2xl sm:rounded-3xl border p-3 sm:p-5 transition-all duration-300
+                      focus:outline-none focus:ring-2 focus:ring-blue-500
+                      ${
+                        connectedDef
+                          ? "border-cyan-400 bg-cyan-50 shadow-xl shadow-cyan-100"
+                          : activeDefId
+                            ? "border-dashed border-slate-300 bg-white/90 hover:bg-cyan-50 hover:border-cyan-300"
+                            : "border-slate-300 bg-white/90 hover:border-blue-300 hover:shadow-xl"
+                      }
+                    `}
+                    aria-label={`Definición: ${concept.label}. ${
                       connectedDef
-                        ? "border-cyan-400 bg-cyan-50 shadow-xl shadow-cyan-100"
+                        ? "Conectado, clic para desconectar"
                         : activeDefId
-                          ? "border-dashed border-slate-300 bg-white/90 hover:bg-cyan-50 hover:border-cyan-300"
-                          : "border-slate-300 bg-white/90 hover:border-blue-300 hover:shadow-xl"
-                    }
-                  `}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent pointer-events-none" />
-                  <div className="relative z-10">
-                    <p className="text-slate-700 leading-relaxed">
-                      {concept.label}
-                    </p>
-                  </div>
-                </motion.div>
+                          ? "Clic para conectar"
+                          : "Selecciona un concepto primero"
+                    }`}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent pointer-events-none" />
+                    <div className="relative z-10">
+                      <p className="text-slate-700 text-xs sm:text-base leading-relaxed">
+                        {concept.label}
+                      </p>
+                    </div>
+                  </motion.button>
+                </li>
               );
             })}
-          </div>
-        </div>
+          </ul>
+        </section>
       </div>
 
       {/* ENDPOINTS */}
       <svg
         className="absolute inset-0 z-30"
         style={{ width: "100%", height: "100%", pointerEvents: "none" }}
+        aria-hidden="true"
       >
         {Object.entries(linePositions).map(([defId, pos]) => {
           const record = answerRecords[defId];
@@ -635,7 +656,7 @@ export default function MatchPairsActivity({
       </svg>
 
       {/* FOOTER */}
-      <div className="relative z-20 px-6 pb-8">
+      <footer className="relative z-20 px-4 sm:px-6 pb-6 sm:pb-8">
         {!evaluated && allConnected && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -643,12 +664,14 @@ export default function MatchPairsActivity({
             className="flex justify-center"
           >
             <motion.button
+              type="button"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={handleEvaluate}
-              className="px-10 py-4 rounded-2xl font-bold text-white shadow-2xl bg-gradient-to-r from-blue-600 to-sky-500 cursor-pointer flex items-center gap-3"
+              className="px-6 py-3 sm:px-10 sm:py-4 rounded-2xl font-bold text-sm sm:text-base text-white shadow-2xl bg-gradient-to-r from-blue-600 to-sky-500 cursor-pointer flex items-center gap-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              aria-label="Validar respuestas"
             >
-              <Lightning size={22} weight="fill" />
+              <Lightning size={20} weight="fill" />
               Validar respuestas
             </motion.button>
           </motion.div>
@@ -661,12 +684,18 @@ export default function MatchPairsActivity({
             className="flex justify-center"
           >
             <motion.button
+              type="button"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => setShowCorrectAnswers((prev) => !prev)}
-              className="px-10 py-4 rounded-2xl font-bold text-white shadow-2xl bg-gradient-to-r from-emerald-500 to-green-500 cursor-pointer flex items-center gap-3"
+              className="px-6 py-3 sm:px-10 sm:py-4 rounded-2xl font-bold text-sm sm:text-base text-white shadow-2xl bg-gradient-to-r from-emerald-500 to-green-500 cursor-pointer flex items-center gap-3 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              aria-label={
+                showCorrectAnswers
+                  ? "Ocultar respuestas correctas"
+                  : "Mostrar respuestas correctas"
+              }
             >
-              <Eye size={22} weight="fill" />
+              <Eye size={20} weight="fill" />
               {showCorrectAnswers
                 ? "Ocultar respuestas"
                 : "Mostrar respuestas correctas"}
@@ -678,12 +707,12 @@ export default function MatchPairsActivity({
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center text-sm text-slate-500 mt-3"
+            className="text-center text-xs sm:text-sm text-slate-500 mt-3"
           >
             Conecta todos los pares para validar
           </motion.p>
         )}
-      </div>
-    </div>
+      </footer>
+    </section>
   );
 }
