@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { Check, X } from "@phosphor-icons/react";
 import FloatingFeedback from "./FloatingFeedback";
+import { playSound } from "../../../utils/soundManager";
 
 export default function TrueFalseActivity({
   items,
@@ -60,6 +61,11 @@ export default function TrueFalseActivity({
       if (!item) return;
 
       const isCorrect = item.correctAnswer == value;
+      if (isCorrect) {
+        playSound("correct");
+      } else {
+        playSound("wrong");
+      }
       const newAnswer = {
         userAnswer: value,
         correct: isCorrect,

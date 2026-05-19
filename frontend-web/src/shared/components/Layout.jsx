@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useLogout } from "../../features/auth/hooks/useAuth";
 import { useAuthStore } from "../../store/authStore";
+import { useSoundStore } from "../../store/soundStore";
 import { LogoIcon } from "./LogoIcon";
-import { SignOut, X } from "@phosphor-icons/react";
+import { SignOut, X, SpeakerHigh, SpeakerSlash } from "@phosphor-icons/react";
 
 const navItems = [
   {
@@ -119,6 +120,8 @@ export function Layout() {
     }
   `;
 
+  const { isMuted, toggleMute } = useSoundStore();
+
   return (
     <div className="flex h-screen bg-[#f8faff] overflow-hidden">
       {/* Overlay móvil */}
@@ -195,8 +198,8 @@ export function Layout() {
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="p-3 border-t border-blue-500/40">
+        {/* Logout y sonido */}
+        <div className="p-3 border-t border-blue-500/40 flex">
           <button
             onClick={logout}
             title={collapsed && !isMobile ? "Cerrar sesión" : undefined}
@@ -207,6 +210,13 @@ export function Layout() {
             <SignOut className="w-5 h-5 flex-shrink-0" />
 
             {(!collapsed || isMobile) && <span>Cerrar sesión</span>}
+          </button>
+          <button
+            onClick={toggleMute}
+            className="p-2 rounded-full text-white transition-all duration-200 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+            aria-label={isMuted ? "Activar sonido" : "Silenciar sonido"}
+          >
+            {isMuted ? <SpeakerSlash size={24} /> : <SpeakerHigh size={24} />}
           </button>
         </div>
       </aside>
