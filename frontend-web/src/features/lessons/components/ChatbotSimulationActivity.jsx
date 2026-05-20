@@ -223,6 +223,19 @@ export default function ChatbotSimulationActivity({
   const currentItem = items[currentRound];
 
   // ------------------------------------------------------------------
+  // 5b. Opciones en orden aleatorio (nuevo)
+  // ------------------------------------------------------------------
+  const shuffledOptions = useMemo(() => {
+    if (!currentItem?.options) return [];
+    const copy = [...currentItem.options];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }, [currentRound, currentItem?.options]);
+
+  // ------------------------------------------------------------------
   // 6. Iniciar ronda (efecto de escritura)
   // ------------------------------------------------------------------
   useEffect(() => {
@@ -588,7 +601,7 @@ export default function ChatbotSimulationActivity({
             className="border-t border-slate-200 bg-white p-4 space-y-3"
             aria-label="Opciones de respuesta"
           >
-            {currentItem.options.map((opt) => (
+            {shuffledOptions.map((opt) => (
               <motion.button
                 key={opt.id}
                 whileHover={{ scale: 1.01 }}
