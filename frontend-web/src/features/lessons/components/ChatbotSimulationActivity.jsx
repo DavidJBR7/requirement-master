@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Lightning } from "@phosphor-icons/react";
-
+import Button from "../../../shared/components/Button";
 import GarciaAvatar from "../../../shared/components/GarciaAvatar";
 import TypingMessage from "../../../shared/components/TypingMessage";
 
@@ -9,6 +9,7 @@ const CONTEXT_MESSAGE =
   "El señor García llega a tu oficina buscando ayuda para comprender mejor algunos conceptos relacionados con requerimientos de software.";
 
 const THINKING_DELAY = 3000;
+const PAUSE_DELAY = 3000; // Pausa para leer la retroalimentación antes de la siguiente pregunta
 
 // ------------------------------------------------------------------
 // Función auxiliar para generar el mensaje de retroalimentación
@@ -130,13 +131,13 @@ export default function ChatbotSimulationActivity({
           text: option.text,
         });
 
-        // Reacción con el feedback correspondiente
+        // Reacción con el feedback correspondiente (ahora como mensaje del NPC)
         const mood = option.avatarExpression || "neutral";
         const feedbackText = getFeedbackMessage(answerId, multiplier, item);
 
         history.push({
-          id: `reaction-${item.id}`,
-          type: "reaction",
+          id: `feedback-${item.id}`,
+          type: "npc-feedback",
           mood,
           text: feedbackText,
         });
@@ -157,7 +158,6 @@ export default function ChatbotSimulationActivity({
   const [chatHistory, setChatHistory] = useState([]);
   const [confidencePoints, setConfidencePoints] = useState(0);
   const [completed, setCompleted] = useState(false);
-
   const [hasStarted, setHasStarted] = useState(false);
 
   const [avatarMood, setAvatarMood] = useState("neutral");
@@ -168,6 +168,16 @@ export default function ChatbotSimulationActivity({
   const [typingFinished, setTypingFinished] = useState(false);
 
   const chatBottomRef = useRef(null);
+  const pauseTimeoutRef = useRef(null); // para limpiar el timeout de pausa
+  const thinkingTimeoutRef = useRef(null); // para limpiar el timeout de pensamiento
+
+  // Limpiar timeouts al desmontar
+  useEffect(() => {
+    return () => {
+      if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+      if (thinkingTimeoutRef.current) clearTimeout(thinkingTimeoutRef.current);
+    };
+  }, []);
 
   // ------------------------------------------------------------------
   // 3. Inicialización única al montar
@@ -179,7 +189,7 @@ export default function ChatbotSimulationActivity({
       // Hay respuestas previas: se considera ya iniciada
       setChatHistory(initialData.initialChatHistory);
       setConfidencePoints(initialData.initialPoints);
-      setHasStarted(true); // <-- arranca directamente
+      setHasStarted(true);
 
       const idx = initialData.firstUnansweredIdx;
       if (idx >= items.length) {
@@ -189,13 +199,12 @@ export default function ChatbotSimulationActivity({
         setCurrentRound(idx);
       }
     } else {
-      // Sin respuestas: solo contexto, no iniciada
+      // Sin respuestas: inicio limpio (sin contexto en el chat)
       setChatHistory([
         { id: "context", type: "context", text: CONTEXT_MESSAGE },
       ]);
       setConfidencePoints(0);
-      setHasStarted(false); // <-- se necesita pulsar "Continuar"
-      // currentRound se mantiene en 0, pero no se usará hasta que hasStarted sea true
+      setHasStarted(false);
     }
 
     initialLoadDone.current = true;
@@ -284,7 +293,7 @@ export default function ChatbotSimulationActivity({
     }
 
     // Simular pensamiento del NPC antes de reaccionar
-    setTimeout(() => {
+    thinkingTimeoutRef.current = setTimeout(() => {
       setThinking(false);
 
       const multiplier = option.scoreMultiplier || 0;
@@ -301,34 +310,34 @@ export default function ChatbotSimulationActivity({
         currentItem,
       );
 
-      // Reacción: avatar con expresión y texto de feedback
+      // Agregar el mensaje de feedback como un nuevo mensaje del NPC
       setChatHistory((prev) => [
         ...prev,
         {
-          id: `reaction-${currentItem.id}`,
-          type: "reaction",
+          id: `feedback-${currentItem.id}`,
+          type: "npc-feedback",
           mood,
           text: feedbackMessage,
         },
       ]);
+
+      // Pausa para lectura antes de la siguiente pregunta
+      pauseTimeoutRef.current = setTimeout(() => {
+        if (currentRound < items.length - 1) {
+          setAvatarMood("neutral");
+          setCurrentRound((prev) => prev + 1);
+        } else {
+          setCompleted(true);
+          onActivityComplete?.();
+        }
+        // Limpiar la referencia del timeout
+        pauseTimeoutRef.current = null;
+      }, PAUSE_DELAY);
     }, THINKING_DELAY);
-
-    // ------------------------------------------------------------------
-    // 9. Pasar a la siguiente ronda o finalizar
-    // ------------------------------------------------------------------
-    setAvatarMood("neutral");
-    setSelectedOption(null);
-
-    if (currentRound < items.length - 1) {
-      setCurrentRound((prev) => prev + 1);
-    } else {
-      setCompleted(true);
-      onActivityComplete?.();
-    }
   };
 
   // ------------------------------------------------------------------
-  // 10. Porcentaje y color de la barra de confianza
+  // 9. Porcentaje y color de la barra de confianza
   // ------------------------------------------------------------------
   const confidencePercentage = useMemo(
     () => (confidencePoints / maxConfidence) * 100,
@@ -349,37 +358,80 @@ export default function ChatbotSimulationActivity({
   }, [confidencePercentage]);
 
   // ------------------------------------------------------------------
-  // 11. Manejador del botón "Continuar"
+  // 10. Manejador del botón "Continuar"
   // ------------------------------------------------------------------
   const handleStartConversation = () => {
     setHasStarted(true);
-    // Forzamos la primera ronda, que añadirá el mensaje del NPC y comenzará a escribir
-    setCurrentRound(0);
   };
 
   // ------------------------------------------------------------------
-  // 12. Renderizado
+  // 11. Pantalla de bienvenida (cuando no ha comenzado)
+  // ------------------------------------------------------------------
+  if (!hasStarted) {
+    return (
+      <div className="flex justify-center">
+        <div className="flex flex-col h-[80vh] rounded-3xl overflow-hidden border border-slate-200 bg-slate-50 max-w-xl w-full">
+          <div className="flex-1 flex items-center justify-center p-6">
+            <div className="max-w-2xl w-full bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+              <div className="flex flex-col items-center text-center gap-6">
+                <GarciaAvatar mood="neutral" talking={false} />
+                <p className="text-slate-700 text-lg leading-relaxed">
+                  {CONTEXT_MESSAGE}
+                </p>
+                <Button
+                  onClick={handleStartConversation}
+                  className="px-8 py-4 !rounded-2xl bg-brand-gradient text-white font-bold shadow-lg"
+                >
+                  Continuar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ------------------------------------------------------------------
+  // 12. Renderizado del chat (actividad iniciada)
   // ------------------------------------------------------------------
   return (
     <div className="flex justify-center">
-      <div className="flex flex-col h-full rounded-3xl overflow-hidden border border-slate-200 bg-slate-50 max-w-xl">
+      <section
+        className="flex flex-col h-full rounded-3xl overflow-hidden border border-slate-200 bg-slate-50 max-w-xl"
+        aria-label="Simulación de chat con el señor García"
+      >
         {/* HEADER con barra de confianza + mini avatar */}
-        <div className="bg-white border-b border-slate-200 p-5">
-          <div className="flex items-center gap-3 mb-2">
-            {/* Mini avatar a la izquierda de la barra */}
-            <div className="w-10 h-10 flex-shrink-0">
+        <header className="bg-gradient-to-br from-blue-200/40 via-slate-100/60 to-blue-300/30 backdrop-blur-2xl bg-white/10 border-b border-blue-200/50 shadow-xl shadow-blue-500/10 px-5 py-3 sm:p-5">
+          <div className="flex items-center gap-3 sm:mb-2">
+            <figure className="w-10 sm:w-14 flex-shrink-0">
               <GarciaAvatar mood={confidenceMood} talking={avatarTalking} />
-            </div>
+            </figure>
             <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  Confianza del cliente
-                </span>
-                <span className="text-sm font-bold text-slate-700">
-                  {confidencePercentage}%
-                </span>
+              <div className="flex items-start justify-between sm:mb-1">
+                <h2 className="text-xs sm:text-md font-bold uppercase tracking-wide text-slate-800">
+                  Señor {items[0].avatar}
+                </h2>
               </div>
-              <div className="w-full h-4 rounded-full bg-slate-200 overflow-hidden">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Confianza
+                </span>
+                <output
+                  className="text-xs font-bold text-slate-700"
+                  aria-label={`Nivel de confianza: ${confidencePercentage}%`}
+                >
+                  {confidencePercentage}%
+                </output>
+              </div>
+              <div
+                className="w-full h-2 sm:h-3 rounded-full bg-slate-200 overflow-hidden"
+                role="progressbar"
+                aria-valuenow={confidencePercentage}
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-label="Barra de progreso de confianza"
+              >
                 <motion.div
                   animate={{ width: `${confidencePercentage}%` }}
                   transition={{ duration: 0.5 }}
@@ -388,49 +440,43 @@ export default function ChatbotSimulationActivity({
               </div>
             </div>
           </div>
-        </div>
+        </header>
 
         {/* CHAT */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        <main
+          className="flex-1 overflow-y-auto p-5 space-y-4 max-h-[40vh] sm:max-h-[45vh]"
+          aria-label="Historial de conversación"
+          role="log"
+        >
           {chatHistory.map((msg) => {
-            // CONTEXTO
+            // CONTEXTO (solo cuando se recarga una actividad ya iniciada)
             if (msg.type === "context") {
               return (
-                <div key={msg.id}>
-                  <div className="bg-blue-100 border border-blue-200 rounded-2xl p-4 text-sm text-blue-900">
+                <article key={msg.id}>
+                  <div className="bg-blue-100 border border-blue-200 rounded-2xl p-2 sm:p-4 text-xs sm:text-sm text-blue-900">
                     {msg.text}
                   </div>
-                  {/* Botón "Continuar" si la conversación aún no ha empezado */}
-                  {!hasStarted && (
-                    <div className="mt-4 flex justify-center">
-                      <button
-                        onClick={handleStartConversation}
-                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all"
-                      >
-                        Continuar
-                      </button>
-                    </div>
-                  )}
-                </div>
+                </article>
               );
             }
 
-            // NPC (Sr. García) – avatar a la izquierda, burbuja de texto a la derecha
+            // NPC (Sr. García) – pregunta actual
             if (msg.type === "npc") {
               const isCurrent = msg.id === currentItem?.id;
               const isBeingTyped = isCurrent && !typingFinished;
 
               return (
-                <div key={msg.id} className="flex items-center gap-3">
-                  {/* Avatar del NPC */}
-                  <div className="w-14 flex-shrink-0">
+                <article
+                  key={msg.id}
+                  className="flex items-center gap-2 sm:gap-3"
+                >
+                  <figure className="w-10 sm:w-14 flex-shrink-0">
                     <GarciaAvatar
                       mood={isCurrent ? avatarMood : "neutral"}
                       talking={isCurrent && avatarTalking}
                       size="sm"
                     />
-                  </div>
-                  {/* Burbuja de texto */}
+                  </figure>
                   <div className="max-w-[50%]">
                     {isBeingTyped ? (
                       <TypingMessage
@@ -439,55 +485,67 @@ export default function ChatbotSimulationActivity({
                         onFinished={handleTypingFinished}
                       />
                     ) : (
-                      <div className="rounded-2xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm whitespace-pre-wrap">
+                      <blockquote className="rounded-2xl rounded-bl-xs border border-slate-200 bg-white px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-700 shadow-sm whitespace-pre-wrap">
                         {msg.text}
-                      </div>
+                      </blockquote>
                     )}
                   </div>
-                </div>
+                </article>
               );
             }
 
             // USUARIO – alineado a la derecha
             if (msg.type === "user") {
               return (
-                <div key={msg.id} className="flex justify-end">
-                  <div className="max-w-[50%] rounded-2xl rounded-br-md bg-brand-gradient px-4 py-3 text-sm text-white shadow-md">
+                <article key={msg.id} className="flex justify-end">
+                  <div className="max-w-[50%] rounded-2xl rounded-br-xs bg-brand-gradient px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-white shadow-md">
                     {msg.text}
                   </div>
-                </div>
+                </article>
               );
             }
 
             // REACCIÓN
-            if (msg.type === "reaction") {
+            if (msg.type === "npc-feedback") {
               const getReactionStyles = () => {
                 switch (msg.mood) {
                   case "approved":
-                    return "border-emerald-300 bg-emerald-50 shadow-lg shadow-emerald-100";
+                    return "border-emerald-200 bg-emerald-50";
+
                   case "maybe":
-                    return "border-amber-300 bg-amber-50 shadow-lg shadow-amber-100";
+                    return "border-amber-200 bg-amber-50";
+
                   case "confused":
-                    return "border-orange-300 bg-orange-50 shadow-lg shadow-orange-100";
+                    return "border-orange-200 bg-orange-50";
+
                   case "incorrect":
-                    return "border-red-300 bg-red-50 shadow-lg shadow-red-100";
+                    return "border-red-200 bg-red-50";
+
                   default:
-                    return "border-slate-200 bg-white shadow-sm";
+                    return "border-slate-200 bg-white";
                 }
               };
 
               return (
-                <div key={msg.id} className="flex items-start gap-3">
-                  <div className="w-14 flex-shrink-0">
+                <motion.article
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center gap-3"
+                >
+                  <figure className="w-10 sm:w-14 flex-shrink-0">
                     <GarciaAvatar mood={msg.mood} size="sm" />
-                  </div>
+                  </figure>
                   {/* Burbuja con mensaje de retroalimentación con estilo dinámico */}
                   <div
-                    className={`rounded-2xl rounded-bl-md border px-4 py-3 ${getReactionStyles()}`}
+                    className={`rounded-2xl rounded-bl-xs border px-3 py-2 sm:px-4 sm:py-3  ${getReactionStyles()}`}
                   >
-                    <p className="text-sm text-slate-700">{msg.text}</p>
+                    <p className="text-xs sm:text-sm text-slate-700">
+                      {msg.text}
+                    </p>
                   </div>
-                </div>
+                </motion.article>
               );
             }
 
@@ -496,10 +554,14 @@ export default function ChatbotSimulationActivity({
 
           {/* INDICADOR DE "PENSANDO" */}
           {thinking && (
-            <div className="flex items-start gap-3">
-              <div className="w-12 h-12 flex-shrink-0">
-                <GarciaAvatar mood="neutral" talking />
-              </div>
+            <div
+              className="flex items-center gap-3"
+              aria-live="polite"
+              aria-label="El señor García está pensando"
+            >
+              <figure className="w-12 h-12 flex-shrink-0">
+                <GarciaAvatar mood="neutral" talking={false} />
+              </figure>
               <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 inline-flex gap-1">
                 {[0, 1, 2].map((dot) => (
                   <motion.div
@@ -518,25 +580,29 @@ export default function ChatbotSimulationActivity({
           )}
 
           <div ref={chatBottomRef} />
-        </div>
+        </main>
 
         {/* OPCIONES DE RESPUESTA */}
         {!completed && showOptions && (
-          <div className="border-t border-slate-200 bg-white p-4 space-y-3">
+          <nav
+            className="border-t border-slate-200 bg-white p-4 space-y-3"
+            aria-label="Opciones de respuesta"
+          >
             {currentItem.options.map((opt) => (
               <motion.button
                 key={opt.id}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 onClick={() => handleSelectOption(opt.id)}
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left text-sm text-slate-700 shadow-sm hover:border-blue-300 hover:bg-blue-50"
+                className="w-full rounded-2xl border border-slate-200 bg-blue-50 p-2 sm:p-4 text-left text-xs sm:text-sm text-slate-700 shadow-sm hover:border-blue-300 hover:bg-blue-50 cursor-pointer"
+                type="button"
               >
                 {opt.text}
               </motion.button>
             ))}
-          </div>
+          </nav>
         )}
-      </div>
+      </section>
     </div>
   );
 }

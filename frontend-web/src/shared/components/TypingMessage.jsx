@@ -39,7 +39,7 @@ export default function TypingMessage({
         opacity: 1,
         y: 0,
       }}
-      className="max-w-[80%] rounded-2xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm whitespace-pre-wrap"
+      className="rounded-2xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm whitespace-pre-wrap"
     >
       {displayed}
 
