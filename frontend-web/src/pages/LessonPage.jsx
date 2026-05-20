@@ -31,6 +31,7 @@ export default function LessonPage() {
   const {
     data: lesson,
     isLoading,
+    isFetching,
     error,
   } = useLessonDetail(lessonId, {
     enabled: !!lessonId && shouldStartPractice,
@@ -49,6 +50,8 @@ export default function LessonPage() {
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
   const [result, setResult] = useState(null);
   const [showingResult, setShowingResult] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
+  const [isResetting, setIsResetting] = useState(false);
 
   const justFinalized = useRef(false);
 
@@ -134,19 +137,35 @@ export default function LessonPage() {
   const handleReset = () => {
     resetMutation.mutate(lessonId, {
       onSuccess: () => {
+        // Borra la caché por completo
+        queryClient.removeQueries({ queryKey: ["lesson", lessonId] });
+        setIsResetting(true);
         setResult(null);
-        setCurrentActivityIndex(0);
         setShowingResult(false);
         justFinalized.current = false;
+        setCurrentActivityIndex(0);
       },
     });
   };
+
+  useEffect(() => {
+    if (
+      isResetting &&
+      !isLoading &&
+      lesson &&
+      lesson.finalized === false &&
+      lesson.totalScore === 0
+    ) {
+      setResetKey((prev) => prev + 1); // Remonta las actividades con datos limpios
+      setIsResetting(false);
+    }
+  }, [isResetting, isLoading, lesson]);
 
   const handleBackToRoadmap = () => {
     navigate("/roadmap");
   };
 
-  if (isLoading) {
+  if (isResetting || isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="flex items-center gap-3 text-gray-500">
@@ -367,6 +386,7 @@ export default function LessonPage() {
               <div className="flex-1 overflow-x-auto">
                 {currentActivity && (
                   <ActivityFactory
+                    key={resetKey}
                     activity={currentActivity}
                     onSubmitAnswer={handleSubmitAnswer}
                     onActivityComplete={handleActivityComplete}

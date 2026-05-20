@@ -112,12 +112,19 @@ export default function TheoryView({
                       onClick={onReset}
                       isLoading={isResetting}
                       className="
-        rounded-xl md:rounded-2xl
-        bg-yellow-500 hover:bg-yellow-600
-        px-4 md:px-6
-        py-1.5 md:py-3
-        text-sm md:text-base
-      "
+                                rounded-xl md:rounded-2xl
+                                w-10 h-10 rounded-xl
+                                md:w-auto md:h-auto
+                                md:px-6 md:py-2
+                                transition-colors
+                                border border-white/20
+                                bg-white/10
+                                hover:bg-white/20
+                                hover:border-yellow-400
+                                hover:text-yellow-500
+                                text-white font-semibold
+                                cursor-pointer
+                                "
                     >
                       Reiniciar lección
                     </button>
