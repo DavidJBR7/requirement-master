@@ -1,260 +1,455 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Lightning, ChatCircle, ArrowRight } from "@phosphor-icons/react";
-import FloatingFeedback from "./FloatingFeedback";
-import { Howl } from "howler";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { Lightning } from "@phosphor-icons/react";
 
-const correctSound = new Howl({ src: ["/sounds/correct.mp3"] });
-const incorrectSound = new Howl({ src: ["/sounds/incorrect.mp3"] });
+import GarciaAvatar from "../../../shared/components/GarciaAvatar";
+import TypingMessage from "../../../shared/components/TypingMessage";
+
+const CONTEXT_MESSAGE =
+  "El señor García llega a tu oficina buscando ayuda para comprender mejor algunos conceptos relacionados con requerimientos de software.";
+
+const THINKING_DELAY = 3000;
 
 export default function ChatbotSimulationActivity({
+  activityId,
   items,
   initialAnswers,
   onSubmitAnswer,
   onActivityComplete,
-  activityId,
-  maxScore,
-  maxXp,
 }) {
-  const totalRounds = items.length;
-  const [currentRound, setCurrentRound] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState(null);
-  const [roundTransition, setRoundTransition] = useState(false);
-  const answersRef = useRef(answers);
-  const activityCompletedRef = useRef(false);
+  // ------------------------------------------------------------------
+  // 1. Cálculos iniciales a partir de initialAnswers
+  // ------------------------------------------------------------------
+  const initialLoadDone = useRef(false);
 
-  useEffect(() => {
-    if (initialAnswers && initialAnswers.length > 0) {
-      const initial = {};
-      initialAnswers.forEach((a) => {
-        initial[a.questionId] = {
-          userAnswer: a.userAnswer,
-          correct: a.correct,
-          xp: a.xpAwarded || 0,
-          points: a.pointsAwarded || 0,
-        };
-      });
-      setAnswers(initial);
-      // Determinar la ronda actual en base a las respuestas existentes
-      const answeredRounds = new Set(Object.keys(initial));
-      for (let i = 0; i < items.length; i++) {
-        if (!answeredRounds.has(items[i].id)) {
-          setCurrentRound(i);
-          break;
-        }
-      }
-    }
-  }, [initialAnswers, items]);
-
-  useEffect(() => {
-    answersRef.current = answers;
-    // Verificar si todas las rondas están respondidas
-    if (
-      Object.keys(answers).length === totalRounds &&
-      !activityCompletedRef.current
-    ) {
-      activityCompletedRef.current = true;
-      const totalScore = Object.values(answers).reduce(
-        (s, a) => s + (a.points || 0),
-        0,
-      );
-      const totalXp = Object.values(answers).reduce(
-        (s, a) => s + (a.xp || 0),
-        0,
-      );
-      onActivityComplete(totalScore, totalXp);
-    }
-  }, [answers, totalRounds, onActivityComplete]);
-
-  const handleSelectOption = useCallback(
-    async (option) => {
-      if (submitting || answers[items[currentRound].id]) return;
-      setSubmitting(true);
-
-      const item = items[currentRound];
-      const isBest = option.id === item.bestOption;
-      const scoreMultiplier = option.scoreMultiplier || 0;
-      const points = Math.round(item.scoreReward * scoreMultiplier);
-      const xp = isBest
-        ? item.xpReward
-        : Math.round(item.xpReward * scoreMultiplier);
-      const userAnswer = option.id;
-      const newAnswer = {
-        userAnswer,
-        correct: scoreMultiplier >= 0.8,
-        points,
-        xp,
-      };
-
-      // Actualizar estado local
-      setAnswers((prev) => ({ ...prev, [item.id]: newAnswer }));
-      setFeedback({ correct: newAnswer.correct, xp });
-
-      // Reproducir sonido
-      if (newAnswer.correct) correctSound.play();
-      else incorrectSound.play();
-
-      try {
-        await onSubmitAnswer(activityId, item.id, userAnswer);
-      } catch (error) {
-        console.error("Error al enviar respuesta:", error);
-      }
-
-      setSubmitting(false);
-      // Avanzar a la siguiente ronda con transición
-      if (currentRound < totalRounds - 1) {
-        setRoundTransition(true);
-        setTimeout(() => {
-          setCurrentRound((prev) => prev + 1);
-          setRoundTransition(false);
-        }, 500);
-      }
-    },
-    [
-      submitting,
-      answers,
-      currentRound,
-      items,
-      activityId,
-      onSubmitAnswer,
-      totalRounds,
-    ],
+  const maxConfidence = useMemo(
+    () => items.reduce((sum, item) => sum + (item.scoreReward || 0), 0),
+    [items],
   );
 
+  const initialData = useMemo(() => {
+    if (!initialAnswers || initialAnswers.length === 0) {
+      return {
+        initialChatHistory: null,
+        initialPoints: 0,
+        firstUnansweredIdx: 0,
+        lastAvatarMood: "neutral",
+      };
+    }
+
+    const answeredMap = {};
+    initialAnswers.forEach((a) => {
+      answeredMap[a.questionId] = a.userAnswer;
+    });
+
+    let points = 0;
+    const history = [{ id: "context", type: "context", text: CONTEXT_MESSAGE }];
+    let firstUnansweredIdx = items.length;
+    let lastMood = "neutral";
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const answerId = answeredMap[item.id];
+
+      // Si no hay respuesta para esta ronda, es la primera sin responder
+      if (!answerId) {
+        firstUnansweredIdx = Math.min(firstUnansweredIdx, i);
+        break; // No agregamos más mensajes de rondas futuras
+      }
+
+      // Agregar mensaje del NPC (Sr. García)
+      history.push({
+        id: item.id,
+        type: "npc",
+        text: item.message,
+      });
+
+      const option = item.options.find((o) => o.id === answerId);
+      if (option) {
+        const multiplier = option.scoreMultiplier || 0;
+        const earned = Math.round(item.scoreReward * multiplier);
+        points += earned;
+
+        // Mensaje del usuario
+        history.push({
+          id: `user-${item.id}`,
+          type: "user",
+          text: option.text,
+        });
+
+        // Determinar el mood basado en el multiplicador
+        const mood = multiplier >= 0.8 ? "happy" : "confused";
+        lastMood = mood;
+
+        // No agregamos mensaje de reacción textual, solo guardamos el mood
+        // que se mostrará en el avatar al cargar
+      }
+    }
+
+    return {
+      initialChatHistory: history,
+      initialPoints: points,
+      firstUnansweredIdx,
+      lastAvatarMood: lastMood,
+    };
+  }, [items, initialAnswers]);
+
+  // ------------------------------------------------------------------
+  // 2. Estados principales
+  // ------------------------------------------------------------------
+  const [currentRound, setCurrentRound] = useState(0);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [confidencePoints, setConfidencePoints] = useState(0);
+  const [completed, setCompleted] = useState(false);
+  const [conversationStarted, setConversationStarted] = useState(false);
+
+  const [avatarMood, setAvatarMood] = useState("neutral");
+  const [avatarTalking, setAvatarTalking] = useState(false);
+  const [thinking, setThinking] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showOptions, setShowOptions] = useState(false);
+  const [typingFinished, setTypingFinished] = useState(false);
+
+  const chatBottomRef = useRef(null);
+
+  // ------------------------------------------------------------------
+  // 3. Inicialización única al montar
+  // ------------------------------------------------------------------
+  useEffect(() => {
+    if (initialLoadDone.current) return;
+
+    if (initialData.initialChatHistory) {
+      setChatHistory(initialData.initialChatHistory);
+      setConfidencePoints(initialData.initialPoints);
+      setAvatarMood(initialData.lastAvatarMood);
+
+      const idx = initialData.firstUnansweredIdx;
+      if (idx >= items.length) {
+        // Todas las rondas ya fueron respondidas
+        setCompleted(true);
+        setConversationStarted(true);
+        onActivityComplete?.();
+      } else {
+        setCurrentRound(idx);
+        // Si hay historial, la conversación ya comenzó
+        setConversationStarted(true);
+        // No mostramos opciones hasta que termine la escritura del NPC actual
+        setShowOptions(false);
+        setTypingFinished(false);
+        // Forzar que se inicie la escritura del NPC de la ronda actual
+        // Esto se manejará en el useEffect que observa currentRound
+      }
+    } else {
+      // Sin respuestas previas → empezar desde cero, solo contexto
+      setChatHistory([
+        { id: "context", type: "context", text: CONTEXT_MESSAGE },
+      ]);
+      setConfidencePoints(0);
+      setCurrentRound(0);
+      setConversationStarted(false);
+      setCompleted(false);
+    }
+
+    initialLoadDone.current = true;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ------------------------------------------------------------------
+  // 4. Scroll automático
+  // ------------------------------------------------------------------
+  useEffect(() => {
+    chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistory, showOptions, thinking]);
+
+  // ------------------------------------------------------------------
+  // 5. Iniciar la conversación (cuando el usuario hace clic en "Continuar")
+  // ------------------------------------------------------------------
+  const handleStartConversation = () => {
+    setConversationStarted(true);
+    // Forzar reinicio de la escritura para la ronda actual (round 0)
+    setTypingFinished(false);
+    setShowOptions(false);
+    setAvatarTalking(true);
+  };
+
+  // ------------------------------------------------------------------
+  // 6. Item actual
+  // ------------------------------------------------------------------
   const currentItem = items[currentRound];
-  const answeredCurrent = !!answers[currentItem?.id];
-  const lastFeedback = feedback;
 
+  // ------------------------------------------------------------------
+  // 7. Iniciar ronda (efecto de escritura)
+  // ------------------------------------------------------------------
+  useEffect(() => {
+    if (!currentItem || completed || !conversationStarted) return;
+    if (!initialLoadDone.current) return;
+
+    // Si esta ronda ya tiene respuesta de usuario, no hacer nada
+    const alreadyAnswered = chatHistory.some(
+      (m) => m.id === `user-${currentItem.id}`,
+    );
+    if (alreadyAnswered) return;
+
+    // Asegurar que el mensaje del NPC exista (por si no se agregó en el historial inicial)
+    setChatHistory((prev) => {
+      if (!prev.some((m) => m.id === currentItem.id)) {
+        return [
+          ...prev,
+          { id: currentItem.id, type: "npc", text: currentItem.message },
+        ];
+      }
+      return prev;
+    });
+
+    // Activar escritura
+    setAvatarTalking(true);
+    setTypingFinished(false);
+    setShowOptions(false);
+    // Resetear mood a neutral al empezar una nueva ronda (se cambiará después de responder)
+    setAvatarMood("neutral");
+  }, [currentRound, currentItem, completed, conversationStarted, chatHistory]);
+
+  // ------------------------------------------------------------------
+  // 8. Callback cuando termina la escritura del mensaje actual
+  // ------------------------------------------------------------------
+  const handleTypingFinished = () => {
+    setAvatarTalking(false);
+    setTypingFinished(true);
+    setShowOptions(true);
+  };
+
+  // ------------------------------------------------------------------
+  // 9. Selección de una opción de respuesta
+  // ------------------------------------------------------------------
+  const handleSelectOption = async (optionId) => {
+    if (thinking) return;
+
+    const option = currentItem.options.find((o) => o.id === optionId);
+    if (!option) return;
+
+    setSelectedOption(optionId);
+
+    // Agregar mensaje del usuario
+    setChatHistory((prev) => [
+      ...prev,
+      {
+        id: `user-${currentItem.id}`,
+        type: "user",
+        text: option.text,
+      },
+    ]);
+
+    setShowOptions(false);
+    setThinking(true);
+
+    // Enviar respuesta al backend
+    try {
+      await onSubmitAnswer(activityId, currentItem.id, optionId);
+    } catch (error) {
+      console.error("Error guardando respuesta:", error);
+    }
+
+    // Simular pensamiento del NPC antes de reaccionar
+    setTimeout(() => {
+      setThinking(false);
+
+      const multiplier = option.scoreMultiplier || 0;
+      const earned = Math.round(currentItem.scoreReward * multiplier);
+      setConfidencePoints((prev) => prev + earned);
+
+      // Cambiar el mood del avatar según la calidad de la respuesta (sin mensaje textual)
+      const mood = multiplier >= 0.8 ? "happy" : "confused";
+      setAvatarMood(mood);
+
+      // No agregamos ningún mensaje de reacción al historial
+      // Solo el avatar cambiará su expresión
+    }, THINKING_DELAY);
+  };
+
+  // ------------------------------------------------------------------
+  // 10. Pasar a la siguiente ronda o finalizar
+  // ------------------------------------------------------------------
+  const handleNext = () => {
+    setAvatarMood("neutral");
+    setSelectedOption(null);
+
+    if (currentRound < items.length - 1) {
+      setCurrentRound((prev) => prev + 1);
+    } else {
+      setCompleted(true);
+      onActivityComplete?.();
+    }
+  };
+
+  // ------------------------------------------------------------------
+  // 11. Porcentaje y color de la barra de confianza
+  // ------------------------------------------------------------------
+  const confidencePercentage = useMemo(
+    () => (confidencePoints / maxConfidence) * 100,
+    [confidencePoints, maxConfidence],
+  );
+
+  const barColor = useMemo(() => {
+    if (confidencePercentage >= 70) return "from-green-500 to-emerald-400";
+    if (confidencePercentage >= 40) return "from-yellow-500 to-orange-400";
+    return "from-red-500 to-rose-400";
+  }, [confidencePercentage]);
+
+  // ------------------------------------------------------------------
+  // 12. Renderizado
+  // ------------------------------------------------------------------
   return (
-    <div className="p-4 md:py-8 md:px-60 space-y-4">
-      <div className="max-w-2xl mx-auto">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentRound}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
-          >
-            {/* Avatar y mensaje */}
-            <div className="p-6 bg-blue-50/50">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold shadow-lg">
-                  {currentItem.avatar === "cliente" ? "👤" : "🤖"}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-blue-800 mb-1">
-                    {currentItem.avatar === "cliente"
-                      ? "Cliente"
-                      : "Entrevistador"}
-                  </p>
-                  <p className="text-slate-700 leading-relaxed">
-                    {currentItem.message}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Opciones */}
-            <div className="p-6 space-y-3">
-              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">
-                Elige tu respuesta
-              </h3>
-              <div className="space-y-2">
-                {currentItem.options.map((option) => {
-                  const isSelected =
-                    answers[currentItem.id]?.userAnswer === option.id;
-                  const isDisabled = answeredCurrent || submitting;
-                  return (
-                    <motion.button
-                      key={option.id}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleSelectOption(option)}
-                      disabled={isDisabled}
-                      className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${
-                        isSelected
-                          ? option.scoreMultiplier >= 0.8
-                            ? "border-emerald-400 bg-emerald-50"
-                            : "border-rose-400 bg-rose-50"
-                          : isDisabled
-                            ? "border-slate-200 bg-slate-50 opacity-70 cursor-not-allowed"
-                            : "border-slate-200 bg-white hover:border-blue-300 hover:shadow-md cursor-pointer"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{option.text}</span>
-                        {isSelected && (
-                          <span
-                            className={`text-xs font-bold px-2 py-1 rounded-full ${
-                              option.scoreMultiplier >= 0.8
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-rose-100 text-rose-700"
-                            }`}
-                          >
-                            {option.scoreMultiplier >= 0.8 ? "✅" : "❌"}
-                          </span>
-                        )}
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Feedback flotante */}
-        <FloatingFeedback
-          show={!!lastFeedback}
-          correct={lastFeedback?.correct}
-          xp={lastFeedback?.xp}
-        />
-
-        {/* Barra de progreso */}
-        <div className="mt-4 bg-white rounded-2xl p-4 border border-slate-200">
-          <div className="flex justify-between text-xs text-slate-500 mb-1">
-            <span>
-              Ronda {currentRound + 1} de {totalRounds}
-            </span>
-            <span>
-              Confianza:{" "}
-              {Math.round(
-                (Object.keys(answers).filter((id) => answers[id]?.correct)
-                  .length /
-                  totalRounds) *
-                  100,
-              )}
-              %
-            </span>
-          </div>
-          <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-500"
-              style={{
-                width: `${(Object.keys(answers).length / totalRounds) * 100}%`,
-              }}
-            />
-          </div>
+    <div className="flex flex-col h-full rounded-3xl overflow-hidden border border-slate-200 bg-slate-50">
+      {/* HEADER con barra de confianza */}
+      <div className="bg-white border-b border-slate-200 p-5">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            Confianza del cliente
+          </span>
+          <span className="text-sm font-bold text-slate-700">
+            {confidencePoints} / {maxConfidence}
+          </span>
         </div>
+        <div className="w-full h-4 rounded-full bg-slate-200 overflow-hidden">
+          <motion.div
+            animate={{ width: `${confidencePercentage}%` }}
+            transition={{ duration: 0.5 }}
+            className={`h-full bg-gradient-to-r ${barColor}`}
+          />
+        </div>
+      </div>
 
-        {/* Botón continuar después de responder (opcional) */}
-        {answeredCurrent && currentRound < totalRounds - 1 && (
-          <div className="flex justify-end mt-2">
-            <button
-              onClick={() => {
-                setCurrentRound((prev) => prev + 1);
-                setFeedback(null);
-              }}
-              className="flex items-center gap-2 text-blue-600 font-medium hover:text-blue-700"
+      {/* CHAT - con scroll interno */}
+      <div className="flex-1 overflow-y-auto p-5 space-y-10">
+        {chatHistory.map((msg) => {
+          // CONTEXTO
+          if (msg.type === "context") {
+            return (
+              <div
+                key={msg.id}
+                className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-sm text-blue-900"
+              >
+                {msg.text}
+              </div>
+            );
+          }
+
+          // NPC (Sr. García)
+          if (msg.type === "npc") {
+            const isCurrent = msg.id === currentItem?.id;
+            const isBeingTyped =
+              isCurrent && !typingFinished && conversationStarted;
+
+            return (
+              <div key={msg.id} className="space-y-4">
+                {isBeingTyped ? (
+                  <TypingMessage
+                    text={msg.text}
+                    active={isBeingTyped}
+                    onFinished={handleTypingFinished}
+                  />
+                ) : (
+                  <div className="max-w-[80%] rounded-2xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm whitespace-pre-wrap">
+                    {msg.text}
+                  </div>
+                )}
+
+                <div className="flex justify-center">
+                  <GarciaAvatar
+                    mood={isCurrent ? avatarMood : msg.mood || "neutral"}
+                    talking={isCurrent && avatarTalking}
+                  />
+                </div>
+              </div>
+            );
+          }
+
+          // USUARIO
+          if (msg.type === "user") {
+            return (
+              <div key={msg.id} className="flex justify-end">
+                <div className="max-w-[80%] rounded-2xl rounded-br-md bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-3 text-sm text-white shadow-md">
+                  {msg.text}
+                </div>
+              </div>
+            );
+          }
+
+          // REACCIÓN (ya no se usa, pero se conserva por compatibilidad si existiera)
+          return null;
+        })}
+
+        {/* INDICADOR DE "PENSANDO" */}
+        {thinking && (
+          <div className="space-y-4">
+            <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 inline-flex gap-1">
+              {[0, 1, 2].map((dot) => (
+                <motion.div
+                  key={dot}
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{
+                    duration: 0.5,
+                    repeat: Infinity,
+                    delay: dot * 0.15,
+                  }}
+                  className="w-2 h-2 rounded-full bg-slate-400"
+                />
+              ))}
+            </div>
+            <div className="flex justify-center">
+              <GarciaAvatar mood="neutral" talking />
+            </div>
+          </div>
+        )}
+
+        <div ref={chatBottomRef} />
+      </div>
+
+      {/* BOTÓN INICIAL "CONTINUAR" (solo si no se ha iniciado la conversación y no está completado) */}
+      {!conversationStarted && !completed && (
+        <div className="border-t border-slate-200 bg-white p-4 flex justify-center">
+          <button
+            onClick={handleStartConversation}
+            className="flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 px-6 py-3 font-bold text-white shadow-lg"
+          >
+            Continuar
+            <Lightning size={18} weight="fill" />
+          </button>
+        </div>
+      )}
+
+      {/* OPCIONES DE RESPUESTA */}
+      {conversationStarted && !completed && showOptions && (
+        <div className="border-t border-slate-200 bg-white p-4 space-y-3">
+          {currentItem.options.map((opt) => (
+            <motion.button
+              key={opt.id}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => handleSelectOption(opt.id)}
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left text-sm text-slate-700 shadow-sm hover:border-blue-300 hover:bg-blue-50"
             >
-              Continuar <ArrowRight size={18} />
+              {opt.text}
+            </motion.button>
+          ))}
+        </div>
+      )}
+
+      {/* BOTÓN SIGUIENTE/FINALIZAR */}
+      {conversationStarted &&
+        !completed &&
+        !thinking &&
+        selectedOption &&
+        !showOptions && (
+          <div className="border-t border-slate-200 bg-white p-4 flex justify-center">
+            <button
+              onClick={handleNext}
+              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 px-6 py-3 font-bold text-white shadow-lg"
+            >
+              {currentRound < items.length - 1 ? "Continuar" : "Finalizar"}
+              <Lightning size={18} weight="fill" />
             </button>
           </div>
         )}
-      </div>
     </div>
   );
 }
