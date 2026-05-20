@@ -65,67 +65,63 @@ export default function TheoryView({
               </div>
 
               <div className="flex flex-col sm:flex-row gap-2 md:gap-3 lg:shrink-0">
-                {!isFinalized && (
-                  <>
+                {!isFinalized ? (
+                  <button
+                    onClick={onStartPractice}
+                    className="
+                                flex items-center justify-center
+                                transition-colors
+                                border border-white/20
+                                bg-white/10
+                                hover:bg-white/20
+                                hover:border-white
+                                text-white font-semibold
+
+                                w-10 h-10 rounded-xl
+                                md:w-auto md:h-auto
+                                md:px-6 md:py-2
+                                md:rounded-2xl
+
+                                cursor-pointer
+                              "
+                    aria-label={
+                      practiceInProgress
+                        ? "Continuar práctica"
+                        : "Comenzar práctica"
+                    }
+                  >
                     {/* Mobile */}
-                    <button
-                      onClick={onStartPractice}
-                      className="
-                        md:hidden
-                        w-10 h-10
-                        rounded-xl
-                        border border-white/20
-                        bg-white/10
-                        hover:bg-white/20
-                        flex items-center justify-center
-                        transition-colors
-                      "
-                      aria-label={
-                        practiceInProgress
-                          ? "Continuar práctica"
-                          : "Comenzar práctica"
-                      }
-                    >
+                    <span className="md:hidden">
                       <ArrowRight
                         size={18}
                         weight="bold"
                         className="text-white"
                       />
-                    </button>
+                    </span>
 
                     {/* Desktop */}
-                    <button
-                      onClick={onStartPractice}
-                      className="
-                        hidden md:flex
-                        rounded-2xl
-                        text-white
-                        font-semibold
-                        border border-white/20
-                        bg-white/10
-                        hover:border-white
-                        px-6 py-2
-                        text-base
-                        cursor-pointer
-                        transition-colors
-                        items-center justify-center
-                      "
-                    >
+                    <span className="hidden md:block text-base">
                       {practiceInProgress
                         ? "Continuar práctica"
                         : "Comenzar práctica"}
+                    </span>
+                  </button>
+                ) : (
+                  onReset && (
+                    <button
+                      onClick={onReset}
+                      isLoading={isResetting}
+                      className="
+        rounded-xl md:rounded-2xl
+        bg-yellow-500 hover:bg-yellow-600
+        px-4 md:px-6
+        py-1.5 md:py-3
+        text-sm md:text-base
+      "
+                    >
+                      Reiniciar lección
                     </button>
-                  </>
-                )}
-
-                {isFinalized && onReset && (
-                  <Button
-                    onClick={onReset}
-                    isLoading={isResetting}
-                    className="!rounded-xl md:!rounded-2xl !bg-yellow-500 hover:bg-yellow-600 px-4 md:px-6 py-1.5 md:py-3 text-sm md:text-base"
-                  >
-                    Reiniciar lección
-                  </Button>
+                  )
                 )}
               </div>
             </div>
