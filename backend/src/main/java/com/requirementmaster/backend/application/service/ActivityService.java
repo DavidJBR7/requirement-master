@@ -172,12 +172,23 @@ public class ActivityService {
 
         double multiplier = options.stream()
                 .filter(o -> chosenOption.equals(o.get("id")))
-                .map(o -> (double) o.get("scoreMultiplier"))
+                .map(o -> {
+                    Object value = o.get("scoreMultiplier");
+                    // Manejar tanto Integer como Double
+                    if (value instanceof Integer) {
+                        return ((Integer) value).doubleValue();
+                    } else if (value instanceof Double) {
+                        return (Double) value;
+                    } else if (value instanceof Number) {
+                        return ((Number) value).doubleValue();
+                    }
+                    return 0.0;
+                })
                 .findFirst()
                 .orElse(0.0);
 
-        int scoreReward = (int) item.get("scoreReward");
-        int xpReward = (int) item.get("xpReward");
+        int scoreReward = ((Number) item.get("scoreReward")).intValue();
+        int xpReward = ((Number) item.get("xpReward")).intValue();
         int points = (int) Math.round(scoreReward * multiplier);
         int xp = (int) Math.round(xpReward * multiplier);
 
@@ -191,7 +202,7 @@ public class ActivityService {
                 .build();
         return Collections.singletonList(record);
     }
-
+    
     private List<AnswerRecord> evaluateUserStory(Map<String, Object> item, JsonNode answer, ActivityProgress ap) {
         Map<String, String> correctAnswers = (Map<String, String>) item.get("correctAnswers");
         JsonNode slots = answer;
