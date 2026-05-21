@@ -95,7 +95,6 @@ public class ProgressService {
         lp.setCompletedActivities(0);
         lp.setLastActivityOrder(0);
         lp.setFinalized(false);
-        lp.setTotalXpEarned(0);
         lessonProgressRepository.save(lp);
     }
 }
