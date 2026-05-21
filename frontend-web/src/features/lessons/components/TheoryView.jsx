@@ -1,21 +1,16 @@
-import Button from "../../../shared/components/Button";
 import { lessonTheoryMap } from "../data/lessonTheory";
 import { BookOpen, ArrowRight } from "@phosphor-icons/react";
 
 export default function TheoryView({
   lesson,
   onStartPractice,
-  onReset,
-  practiceInProgress,
   isInModal = false,
-  isResetting = false,
 }) {
   const theoryContent =
     lessonTheoryMap[lesson.id] ||
     `<p>Contenido teórico no disponible aún para esta lección.</p>`;
 
-  const isFinalized = lesson.finalized;
-
+  const status = lesson.status == "IN_PROGRESS";
   return (
     <section
       aria-labelledby="theory-heading"
@@ -65,83 +60,34 @@ export default function TheoryView({
               </div>
 
               <div className="flex flex-col sm:flex-row gap-2 md:gap-3 lg:shrink-0">
-                {!isFinalized ? (
-                  <button
-                    onClick={onStartPractice}
-                    className="
-                                flex items-center justify-center
-                                transition-colors
-                                border border-white/20
-                                bg-white/10
-                                hover:bg-white/20
-                                hover:border-white
-                                text-white font-semibold
-
-                                w-10 h-10 rounded-xl
-                                md:w-auto md:h-auto
-                                md:px-6 md:py-2
-                                md:rounded-2xl
-
-                                cursor-pointer
-                              "
-                    aria-label={
-                      practiceInProgress
-                        ? "Continuar práctica"
-                        : "Comenzar práctica"
-                    }
-                  >
-                    {/* Mobile */}
-                    <span className="md:hidden">
-                      <ArrowRight
-                        size={18}
-                        weight="bold"
-                        className="text-white"
-                      />
-                    </span>
-
-                    {/* Desktop */}
-                    <span className="hidden md:block text-base">
-                      {practiceInProgress
-                        ? "Continuar práctica"
-                        : "Comenzar práctica"}
-                    </span>
-                  </button>
-                ) : (
-                  onReset && (
-                    <button
-                      onClick={onReset}
-                      isLoading={isResetting}
-                      className="
-                                rounded-xl md:rounded-2xl
-                                w-10 h-10 rounded-xl
-                                md:w-auto md:h-auto
-                                md:px-6 md:py-2
-                                transition-colors
-                                border border-white/20
-                                bg-white/10
-                                hover:bg-white/20
-                                hover:border-yellow-400
-                                hover:text-yellow-500
-                                text-white font-semibold
-                                cursor-pointer
-                                "
-                    >
-                      Reiniciar lección
-                    </button>
-                  )
-                )}
+                {/* Mobile */}{" "}
+                <button
+                  onClick={onStartPractice}
+                  className=" md:hidden w-10 h-10 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors "
+                  aria-label={
+                    status ? "Continuar práctica" : "Comenzar práctica"
+                  }
+                >
+                  {" "}
+                  <ArrowRight
+                    size={18}
+                    weight="bold"
+                    className="text-white"
+                  />{" "}
+                </button>{" "}
+                {/* Desktop */}{" "}
+                <button
+                  onClick={onStartPractice}
+                  className=" hidden md:flex rounded-2xl text-white font-semibold border border-white/20 bg-white/10 hover:border-white px-6 py-2 text-base cursor-pointer transition-colors items-center justify-center "
+                >
+                  {" "}
+                  {status ? "Continuar práctica" : "Comenzar práctica"}{" "}
+                </button>{" "}
               </div>
             </div>
           </div>
         </div>
       </footer>
-
-      {isFinalized && (
-        <aside className="mt-6 rounded-xl md:rounded-2xl border border-yellow-200 bg-yellow-50 p-3 md:p-4 text-xs md:text-sm text-yellow-800">
-          Esta lección ya fue finalizada. Para volver a intentarlo debes
-          reiniciarla.
-        </aside>
-      )}
     </section>
   );
 }

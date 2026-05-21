@@ -30,37 +30,30 @@ public class LessonService {
                 .collect(Collectors.toMap(lp -> lp.getLesson().getId(), lp -> lp));
 
         List<RoadmapLessonResponse> roadmap = new ArrayList<>();
-        boolean previousCompleted = true;
 
         for (Lesson lesson : lessons) {
             LessonProgress progress = progressMap.get(lesson.getId());
-            RoadmapLessonResponse.LessonStatus status;
+
+            // Usar la misma lógica centralizada para determinar el estado
+            LessonProgressStatus effectiveStatus = determineEffectiveStatus(lesson, userId, progress);
+
             Integer currentPercent = null;
             Integer bestScore = null;
             Integer totalXp = null;
 
-            if (!previousCompleted) {
-                status = RoadmapLessonResponse.LessonStatus.LOCKED;
-            } else if (progress == null) {
-                status = RoadmapLessonResponse.LessonStatus.AVAILABLE;
-            } else if (progress.getStatus() == LessonProgressStatus.COMPLETED) {
-                status = RoadmapLessonResponse.LessonStatus.COMPLETED;
+            // Mapear el estado interno al estado del roadmap
+            RoadmapLessonResponse.LessonStatus roadmapStatus = mapToRoadmapStatus(effectiveStatus, progress);
+
+            if (roadmapStatus == RoadmapLessonResponse.LessonStatus.COMPLETED && progress != null) {
                 bestScore = progress.getBestScore();
                 totalXp = progress.getTotalXpEarned();
-            } else if (progress.getStatus() == LessonProgressStatus.IN_PROGRESS && !progress.isFinalized()) {
-                status = RoadmapLessonResponse.LessonStatus.IN_PROGRESS;
+            } else if (roadmapStatus == RoadmapLessonResponse.LessonStatus.IN_PROGRESS && progress != null) {
                 int completed = progress.getCompletedActivities();
                 int total = progress.getTotalActivities();
                 currentPercent = total > 0 ? (completed * 100) / total : 0;
-            } else {
-                status = RoadmapLessonResponse.LessonStatus.AVAILABLE;
             }
 
-            roadmap.add(RoadmapLessonResponse.of(lesson, status, currentPercent, bestScore, totalXp));
-
-            if (!lesson.isExam()) {
-                previousCompleted = (progress != null && progress.getStatus() == LessonProgressStatus.COMPLETED);
-            }
+            roadmap.add(RoadmapLessonResponse.of(lesson, roadmapStatus, currentPercent, bestScore, totalXp));
         }
 
         return roadmap;
@@ -80,6 +73,9 @@ public class LessonService {
             );
         }
 
+        // Usar la misma lógica centralizada
+        LessonProgressStatus effectiveStatus = determineEffectiveStatus(lesson, userId, lessonProgress);
+
         Map<Long, ActivityProgress> activityProgressMap = Collections.emptyMap();
         if (lessonProgress != null) {
             List<ActivityProgress> activityProgressList = activityProgressRepository
@@ -88,6 +84,72 @@ public class LessonService {
                     .collect(Collectors.toMap(ap -> ap.getActivity().getId(), ap -> ap));
         }
 
-        return LessonDetailResponse.of(lesson, activityProgressMap, lessonProgress);
+        return LessonDetailResponse.of(lesson, activityProgressMap, lessonProgress, effectiveStatus);
+    }
+
+    /**
+     * Determina el estado real de una lección considerando:
+     * 1. Si existe progreso, usa el estado guardado
+     * 2. Si no existe progreso, verifica la cadena de desbloqueo
+     */
+    private LessonProgressStatus determineEffectiveStatus(Lesson lesson, Long userId, LessonProgress progress) {
+        // Si ya existe progreso, usar el estado real de la BD
+        if (progress != null) {
+            return progress.getStatus();
+        }
+
+        // Sin progreso: verificar si debería estar disponible o bloqueada
+        if (isLessonUnlocked(lesson, userId)) {
+            return LessonProgressStatus.AVAILABLE;
+        } else {
+            return LessonProgressStatus.LOCKED;
+        }
+    }
+
+    /**
+     * Verifica si una lección está desbloqueada para un usuario
+     * basándose en la cadena de prerrequisitos.
+     */
+    private boolean isLessonUnlocked(Lesson lesson, Long userId) {
+        // La primera lección siempre está disponible
+        if (lesson.getOrderIndex() == 1) {
+            return true;
+        }
+
+        // Buscar la lección no-examen inmediatamente anterior
+        Optional<Lesson> previousLesson = lessonRepository
+                .findTopByOrderIndexLessThanAndIsExamFalseOrderByOrderIndexDesc(lesson.getOrderIndex());
+
+        // Si no hay lección anterior, está disponible
+        if (previousLesson.isEmpty()) {
+            return true;
+        }
+
+        // Verificar si la lección anterior está completada
+        return lessonProgressRepository
+                .findByUserIdAndLessonId(userId, previousLesson.get().getId())
+                .map(lp -> lp.getStatus() == LessonProgressStatus.COMPLETED)
+                .orElse(false);
+    }
+
+    /**
+     * Mapea el LessonProgressStatus interno al estado del roadmap.
+     */
+    private RoadmapLessonResponse.LessonStatus mapToRoadmapStatus(
+            LessonProgressStatus effectiveStatus,
+            LessonProgress progress) {
+
+        return switch (effectiveStatus) {
+            case COMPLETED -> RoadmapLessonResponse.LessonStatus.COMPLETED;
+            case IN_PROGRESS -> {
+                if (progress != null && progress.isFinalized()) {
+                    yield RoadmapLessonResponse.LessonStatus.AVAILABLE;
+                }
+                yield RoadmapLessonResponse.LessonStatus.IN_PROGRESS;
+            }
+            case LOCKED -> RoadmapLessonResponse.LessonStatus.LOCKED;
+            case AVAILABLE -> RoadmapLessonResponse.LessonStatus.AVAILABLE;
+            default -> RoadmapLessonResponse.LessonStatus.AVAILABLE;
+        };
     }
 }

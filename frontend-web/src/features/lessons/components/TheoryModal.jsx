@@ -1,36 +1,21 @@
 import { useNavigate } from "react-router-dom";
 import Modal from "../../../shared/components/Modal";
 import TheoryView from "./TheoryView";
-import { useResetLesson } from "../hooks/useLesson";
 
 export default function TheoryModal({ lessonId, isOpen, onClose, lessonData }) {
   const navigate = useNavigate();
-
-  const resetMutation = useResetLesson();
 
   const lesson = lessonData
     ? {
         id: lessonData.id,
         title: lessonData.title,
-        finalized: lessonData.status === "COMPLETED",
-        progress: {
-          finalized: lessonData.status === "COMPLETED",
-        },
+        status: lessonData.status,
       }
     : null;
 
   const handleStartPractice = () => {
     onClose();
     navigate(`/lessons/${lessonId}?start=practice`);
-  };
-
-  const handleReset = () => {
-    resetMutation.mutate(lessonId, {
-      // No cerramos el modal; al invalidarse las queries se mostrará la lección reiniciada
-      onError: (error) => {
-        console.error("Error al reiniciar la lección:", error);
-      },
-    });
   };
 
   if (!isOpen) return null;
@@ -56,10 +41,7 @@ export default function TheoryModal({ lessonId, isOpen, onClose, lessonData }) {
       <TheoryView
         lesson={lesson}
         onStartPractice={handleStartPractice}
-        onReset={handleReset}
-        practiceInProgress={lessonData.status == "IN_PROGRESS"}
         isInModal={true}
-        isResetting={resetMutation.isPending}
       />
     </Modal>
   );

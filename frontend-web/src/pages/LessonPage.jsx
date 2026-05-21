@@ -20,6 +20,7 @@ export default function LessonPage() {
   const shouldStartPractice = searchParams.get("start") === "practice";
   const queryClient = useQueryClient();
   const initialIndexSet = useRef(false);
+  const autoResetTriggered = useRef(false);
 
   // Redirigir si no se debe iniciar la práctica
   useEffect(() => {
@@ -59,16 +60,6 @@ export default function LessonPage() {
   const total = lesson?.totalActivities ?? 1;
   const percentage = total > 0 ? Math.floor((completed / total) * 100) : 0;
 
-  // Redirigir si la lección ya fue finalizada (y no se acaba de finalizar en esta sesión)
-  useEffect(() => {
-    if (lesson?.finalized && shouldStartPractice && !justFinalized.current) {
-      navigate("/roadmap", { replace: true });
-    }
-    if (justFinalized.current) {
-      justFinalized.current = false;
-    }
-  }, [lesson, shouldStartPractice, navigate]);
-
   // Actividades ordenadas
   const activities = useMemo(() => {
     if (!lesson?.activities) return [];
@@ -89,6 +80,31 @@ export default function LessonPage() {
       initialIndexSet.current = true;
     }
   }, [activities]);
+
+  useEffect(() => {
+    if (!lesson || isLoading) return;
+
+    // Si el estado es "LOCKED", no se puede practicar
+    if (lesson.status == "LOCKED") {
+      navigate("/roadmap", { replace: true });
+      return;
+    }
+
+    // Si la lección está finalizada pero sigue disponible (intento fallido),
+    // reiniciamos automáticamente para comenzar un nuevo intento.
+    if (lesson.finalized && shouldStartPractice && !justFinalized.current) {
+      if (!autoResetTriggered.current) {
+        autoResetTriggered.current = true;
+        setIsResetting(true);
+        handleReset(); // El reinicio limpiará finalized y permitirá continuar
+      }
+    }
+
+    // Reseteamos la bandera justFinalized después de usarla
+    if (justFinalized.current) {
+      justFinalized.current = false;
+    }
+  }, [lesson, isLoading, shouldStartPractice, navigate]);
 
   // Función que se pasa a las actividades para enviar respuestas al backend
   const handleSubmitAnswer = useCallback(
@@ -135,15 +151,23 @@ export default function LessonPage() {
   };
 
   const handleReset = () => {
+    // Mostrar loader de inmediato
+    setIsResetting(true);
+
     resetMutation.mutate(lessonId, {
       onSuccess: () => {
-        // Borra la caché por completo
+        // Limpiar caché para forzar recarga
         queryClient.removeQueries({ queryKey: ["lesson", lessonId] });
-        setIsResetting(true);
         setResult(null);
         setShowingResult(false);
         justFinalized.current = false;
+        autoResetTriggered.current = false;
         setCurrentActivityIndex(0);
+        // isResetting se mantiene true; se apagará cuando la lección se haya recargado
+      },
+      onError: () => {
+        // En caso de error, quitamos el loader y mostramos mensaje
+        setIsResetting(false);
       },
     });
   };

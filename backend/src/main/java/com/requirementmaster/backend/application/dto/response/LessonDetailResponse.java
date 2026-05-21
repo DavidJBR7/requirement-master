@@ -40,7 +40,8 @@ public class LessonDetailResponse {
 
     public static LessonDetailResponse of(Lesson lesson,
                                           Map<Long, ActivityProgress> activityProgressMap,
-                                          LessonProgress lessonProgress) {
+                                          LessonProgress lessonProgress,
+                                          LessonProgressStatus effectiveStatus) {
         if (lesson == null) return null;
 
         List<ActivityFullResponse> activities = lesson.getActivities() != null
@@ -72,7 +73,7 @@ public class LessonDetailResponse {
                     .attempts(lessonProgress.getAttempts())
                     .lastActivityOrder(lessonProgress.getLastActivityOrder());
         } else {
-            builder.status(LessonProgressStatus.LOCKED)
+            builder.status(effectiveStatus)
                     .finalized(false)
                     .totalScore(0)
                     .bestScore(0)
