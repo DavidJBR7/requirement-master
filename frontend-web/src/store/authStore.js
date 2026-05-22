@@ -14,24 +14,45 @@ export const useAuthStore = create(
     (set, get) => ({
       accessToken: null,
       refreshToken: null,
-      user: null,
+      user: null, // { id, username, email, fullName }
       rememberMe: false,
 
       setTokens: (accessToken, refreshToken) => {
         const payload = decodeJwt(accessToken);
-        const user = payload
+        const baseUser = payload
           ? { id: Number(payload.sub), username: payload.username }
+          : null;
+        // Mantener datos previos de email/fullName si existían
+        const prevUser = get().user;
+        const user = baseUser
+          ? {
+              ...baseUser,
+              email: prevUser?.email || null,
+              fullName: prevUser?.fullName || null,
+            }
           : null;
         set({ accessToken, refreshToken, user });
       },
 
       login: (accessToken, refreshToken, rememberMe) => {
         const payload = decodeJwt(accessToken);
-        const user = payload
+        const baseUser = payload
           ? { id: Number(payload.sub), username: payload.username }
           : null;
-        set({ accessToken, refreshToken, rememberMe, user });
+        set({
+          accessToken,
+          refreshToken,
+          rememberMe,
+          user: baseUser ? { ...baseUser, email: null, fullName: null } : null,
+        });
       },
+
+      setUserProfile: (profile) =>
+        set((state) => ({
+          user: state.user
+            ? { ...state.user, ...profile }
+            : { id: profile.id, ...profile },
+        })),
 
       logout: () =>
         set({

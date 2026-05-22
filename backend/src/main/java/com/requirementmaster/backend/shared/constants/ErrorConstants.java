@@ -18,6 +18,7 @@ public final class ErrorConstants {
     public static final String WEAK_PASSWORD = "La contraseña no cumple los requisitos de seguridad";
     public static final String ACCOUNT_DISABLED = "La cuenta está deshabilitada";
     public static final String INVALID_RESET_TOKEN = "Código de recuperación inválido o expirado";
+    public static final String USER_NOT_FOUND = "Usuario no encontrado";
 
     // Activities
     public static final String INVALID_ANSWER_FORMAT = "El formato de la respuesta no es válido";

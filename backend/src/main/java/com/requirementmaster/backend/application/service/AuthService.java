@@ -3,6 +3,7 @@ package com.requirementmaster.backend.application.service;
 import com.requirementmaster.backend.application.dto.request.*;
 import com.requirementmaster.backend.application.dto.response.AuthResponse;
 import com.requirementmaster.backend.application.dto.response.MessageResponse;
+import com.requirementmaster.backend.application.dto.response.UserProfileResponse;
 import com.requirementmaster.backend.domain.entities.*;
 import com.requirementmaster.backend.domain.exceptions.BusinessException;
 import com.requirementmaster.backend.infrastructure.persistence.repository.*;
@@ -160,6 +161,65 @@ public class AuthService {
         resetToken.setUsed(true);
         passwordResetTokenRepository.save(resetToken);
 
+        refreshTokenService.revokeAllUserTokens(user.getId());
+    }
+
+    public UserProfileResponse getUserProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorConstants.USER_NOT_FOUND));
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .build();
+    }
+
+    public UserProfileResponse updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorConstants.USER_NOT_FOUND));
+
+        // Validar unicidad del username
+        if (!user.getUsername().equals(request.getUsername()) &&
+                userRepository.existsByUsername(request.getUsername())) {
+            throw new BusinessException(ErrorConstants.USERNAME_ALREADY_EXISTS);
+        }
+
+        // Validar unicidad del email
+        if (!user.getEmail().equalsIgnoreCase(request.getEmail().trim()) &&
+                userRepository.existsByEmail(request.getEmail().trim().toLowerCase())) {
+            throw new BusinessException(ErrorConstants.EMAIL_ALREADY_EXISTS);
+        }
+
+        user.setFullName(request.getFullName().trim());
+        user.setUsername(request.getUsername().trim());
+        user.setEmail(request.getEmail().trim().toLowerCase());
+        userRepository.save(user);
+
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .build();
+    }
+
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
+            throw new BusinessException("Las contraseñas nuevas no coinciden");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorConstants.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new BusinessException("La contraseña actual es incorrecta");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // Revocar todos los tokens por seguridad
         refreshTokenService.revokeAllUserTokens(user.getId());
     }
 }
