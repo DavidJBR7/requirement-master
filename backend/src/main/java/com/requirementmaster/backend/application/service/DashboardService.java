@@ -103,9 +103,20 @@ public class DashboardService {
                 })
                 .toList();
 
+        DashboardResponse.Performance.BestLesson bestLesson = userLessonProgress.stream()
+                .filter(lp -> lp.getStatus() == LessonProgressStatus.COMPLETED && lp.getBestScore() > 0)
+                .max(Comparator.comparingInt(LessonProgress::getBestScore))
+                .map(lp -> DashboardResponse.Performance.BestLesson.builder()
+                        .lessonId(lp.getLesson().getId())
+                        .title(lp.getLesson().getTitle())
+                        .bestScore(lp.getBestScore())
+                        .build())
+                .orElse(null);
+
         DashboardResponse.Performance performance = DashboardResponse.Performance.builder()
                 .globalAccuracy(Math.round(globalAccuracy * 10.0) / 10.0)
                 .byType(breakdowns)
+                .bestLesson(bestLesson)
                 .build();
 
         // --- Current lesson & recommendation (sin cambios) ---

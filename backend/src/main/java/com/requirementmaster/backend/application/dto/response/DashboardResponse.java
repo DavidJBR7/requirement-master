@@ -47,6 +47,7 @@ public class DashboardResponse {
     public static class Performance {
         private double globalAccuracy;
         private List<TypeBreakdown> byType;
+        private BestLesson bestLesson;
 
         @Getter @Setter
         @NoArgsConstructor
@@ -57,6 +58,16 @@ public class DashboardResponse {
             private double accuracy;
             private int totalXp;
             private int attempts;           // total de intentos de este tipo de actividad
+        }
+
+        @Getter @Setter
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @Builder
+        public static class BestLesson {
+            private Long lessonId;
+            private String title;
+            private int bestScore;
         }
     }
 

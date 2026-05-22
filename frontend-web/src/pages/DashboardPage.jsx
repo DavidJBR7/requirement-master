@@ -23,6 +23,7 @@ import {
   Fire,
   LightbulbFilament,
   TreeStructureIcon,
+  BookOpen,
 } from "@phosphor-icons/react";
 import { useDashboard } from "../features/dashboard/hooks/useDashboard";
 
@@ -257,19 +258,19 @@ function TypeDetailPanel({ breakdowns, selectedType, onSelect }) {
         {hasData ? (
           <div className="space-y-2">
             <MiniMetricCard
-              icon={<Lightning size={16} weight="fill" />}
+              icon={<Lightning size={18} weight="fill" />}
               label="XP ganada"
               value={current.totalXp}
             />
 
             <MiniMetricCard
-              icon={<Target size={16} weight="fill" />}
+              icon={<Target size={18} weight="fill" />}
               label="Precisión"
               value={`${current.accuracy}%`}
             />
 
             <MiniMetricCard
-              icon={<ArrowsCounterClockwise size={16} weight="fill" />}
+              icon={<ArrowsCounterClockwise size={18} weight="fill" />}
               label="Intentos"
               value={current.attempts}
             />
@@ -294,6 +295,12 @@ function TypeDetailPanel({ breakdowns, selectedType, onSelect }) {
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { data: dashboard, isLoading, error } = useDashboard();
+
+  useEffect(() => {
+    if (dashboard) {
+      console.log("Datos del dashboard:", dashboard);
+    }
+  }, [dashboard]);
 
   const [selectedType, setSelectedType] = useState(null);
 
@@ -402,8 +409,8 @@ export default function DashboardPage() {
   };
 
   return (
-    <main className="min-h-screen lg:h-screen bg-[#f8fbff] p-2 sm:p-4 lg:p-6 lg:overflow-hidden flex flex-col">
-      <div className="relative flex flex-col max-w-7xl mx-auto w-full p-3 sm:p-4 lg:p-6 bg-white rounded-3xl sm:rounded-4xl border border-slate-200 shadow-xl flex-1 lg:min-h-0 overflow-hidden">
+    <main className="min-h-screen lg:h-screen bg-[#f8fbff] p-2 sm:p-4 lg:p-6 lg:overflow-hidden flex flex-col items-center justify-center">
+      <div className="relative flex flex-col max-w-7xl mx-auto w-full p-3 sm:p-4 lg:p-6 bg-white rounded-3xl sm:rounded-4xl border border-slate-200 shadow-xl overflow-hidden">
         {/* Background blurs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 right-0 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] rounded-full bg-blue-500/10 blur-3xl" />
@@ -457,7 +464,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Progress donut */}
-            <div className="flex-shrink-0 self-center lg:self-auto w-[15vh] h-[15vh] relative">
+            <div className="flex-shrink-0 self-center lg:self-auto w-[16vh] h-[16vh] relative">
               <svg className="w-full h-full" viewBox="0 0 100 100">
                 {/* Definir el gradiente o colores */}
                 <defs>
@@ -557,63 +564,74 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* ── Main Content (Fila 2) ──────────────── */}
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 lg:min-h-[50vh]">
             {/* Left column: Insights */}
-            <aside className="xl:col-span-1 flex flex-col gap-3 rounded-3xl sm:rounded-4xl border border-slate-200 bg-white p-4 shadow-sm min-w-0">
+            <aside className="xl:col-span-1 flex flex-col gap-3 rounded-3xl sm:rounded-4xl border border-slate-200 bg-white p-4 shadow-sm min-w-0 h-full">
+              {" "}
               <div className="flex items-center gap-2 mb-1">
                 <TreeStructureIcon
                   size={18}
                   className="text-blue-500"
                   weight="fill"
                 />
-
                 <h2 className="text-lg font-bold text-slate-900">Insights</h2>
               </div>
+              <div className="flex flex-col gap-3 flex-1 justify-between">
+                {/* Cards */}
+                <div className="flex flex-col gap-2">
+                  {bestAccuracy && (
+                    <InsightCard
+                      icon={<Target size={22} weight="fill" />}
+                      title="Mayor precisión"
+                      value={`${typeLabels[bestAccuracy.type] || ""}: ${bestAccuracy.accuracy}%`}
+                    />
+                  )}
 
-              {bestAccuracy && (
-                <InsightCard
-                  icon={<Target size={22} weight="fill" />}
-                  title="Mayor precisión"
-                  value={`${typeLabels[bestAccuracy.type] || ""}: ${bestAccuracy.accuracy}%`}
-                />
-              )}
+                  {bestXp && (
+                    <InsightCard
+                      icon={<Lightning size={22} weight="fill" />}
+                      title="Más XP"
+                      value={`${typeLabels[bestXp.type] || ""}: ${bestXp.totalXp} XP`}
+                    />
+                  )}
 
-              {bestXp && (
-                <InsightCard
-                  icon={<Lightning size={22} weight="fill" />}
-                  title="Más XP"
-                  value={`${typeLabels[bestXp.type] || ""}: ${bestXp.totalXp} XP`}
-                />
-              )}
+                  {performance.bestLesson && (
+                    <InsightCard
+                      icon={<BookOpen size={22} weight="fill" />}
+                      title="Mejor lección"
+                      value={`CLASE ${performance.bestLesson.lessonId}: ${performance.bestLesson.bestScore}/100`}
+                    />
+                  )}
+                </div>
+                {/* Recomendación */}
+                <div className="relative overflow-hidden rounded-3xl sm:rounded-4xl bg-white/80 backdrop-blur-xl p-5 sm:p-6">
+                  <div className="absolute inset-0 opacity-[0.2] bg-gradient-to-b from-cyan-500 to-blue-500"></div>
 
-              {/* Recommendation */}
-              <div className="relative overflow-hidden rounded-3xl sm:rounded-4xl bg-white/80 backdrop-blur-xl p-5 sm:p-6">
-                <div className="absolute inset-0 opacity-[0.2] bg-gradient-to-b from-cyan-500 to-blue-500"></div>
+                  <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl opacity-30 bg-cyan-500"></div>
 
-                <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl opacity-30 bg-cyan-500"></div>
-
-                <div className="relative">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center text-white bg-gradient-to-br from-cyan-500 to-blue-500">
-                      <LightbulbFilament size={22} weight="fill" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-9 h-9 rounded-2xl flex items-center justify-center text-white bg-gradient-to-br from-cyan-500 to-blue-500">
+                        <LightbulbFilament size={22} weight="fill" />
+                      </div>
                     </div>
+
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">
+                      Recomendación
+                    </p>
+
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-2 leading-tight break-words">
+                      {nextRecommendation}
+                    </h3>
+
+                    <button
+                      onClick={() => navigate("/roadmap")}
+                      className="mt-5 inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-white text-blue-700 font-bold shadow-sm cursor-pointer text-sm sm:text-base"
+                    >
+                      Continuar
+                      <ArrowRight size={16} weight="bold" />
+                    </button>
                   </div>
-
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">
-                    Recomendación
-                  </p>
-
-                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-2 leading-tight break-words">
-                    {nextRecommendation}
-                  </h3>
-
-                  <button
-                    onClick={() => navigate("/roadmap")}
-                    className="mt-5 inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-white text-blue-700 font-bold shadow-sm cursor-pointer text-sm sm:text-base"
-                  >
-                    Continuar
-                    <ArrowRight size={16} weight="bold" />
-                  </button>
                 </div>
               </div>
             </aside>
