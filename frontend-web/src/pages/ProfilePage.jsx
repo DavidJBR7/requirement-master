@@ -217,7 +217,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f4f8fc] flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-[5px] border-blue-600 border-t-transparent animate-spin" />
+        <div className="w-10 h-10 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
       </main>
     );
   }
@@ -229,7 +229,7 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <main className="min-h-screen bg-[#f4f8fc] flex items-center justify-center p-4">
-        <section className="bg-white rounded-3xl p-8 shadow-lg border border-slate-200">
+        <section className="bg-white rounded-xl p-8 shadow-lg border border-slate-200">
           <p className="text-slate-600 text-center">Usuario no autenticado</p>
         </section>
       </main>
@@ -241,134 +241,38 @@ export default function ProfilePage() {
   // ─────────────────────────────────────────
 
   return (
-    <main
-      className="
-      min-h-[100dvh]
-      w-full
-
-      lg:min-h-screen
-      lg:flex
-      lg:items-center
-      lg:justify-center
-      lg:p-6
-    "
-    >
+    <main className="min-h-screen w-full lg:flex lg:items-center lg:justify-center lg:p-4">
       <motion.section
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="
-        w-full
-
-        min-h-[100dvh]
-
-        lg:w-full
-        lg:max-w-4xl
-        lg:h-[90vh]
-        lg:min-h-0
-      "
+        className="w-full lg:max-w-3xl"
       >
-        <article
-          className="
-          bg-white
-
-          w-full
-          lg:h-full
-
-          overflow-hidden
-
-          border
-          border-slate-200
-
-          shadow-[0_15px_60px_rgba(15,23,42,0.08)]
-
-          rounded-none
-          lg:rounded-[34px]
-
-          flex
-          flex-col
-        "
-        >
+        <article className="bg-white w-full overflow-hidden border border-slate-200 shadow-lg lg:rounded-3xl flex flex-col">
           {/* HEADER */}
-          <header
-            className="
-            relative
-
-            px-5
-            sm:px-6
-            md:px-10
-
-            pt-8
-            pb-24
-
-            bg-gradient-to-br
-            from-blue-600
-            via-blue-500
-            to-cyan-500
-
-            shrink-0
-          "
-          >
+          <header className="relative px-6 pt-6 pb-16 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 shrink-0">
             {/* Glow */}
-            <div className="absolute top-[-80px] right-[-80px] w-72 h-72 bg-white/10 rounded-full blur-3xl" />
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
 
             {/* USER */}
             <div className="relative z-10 flex flex-col items-center text-center">
-              <div
-                className="
-                w-28
-                h-28
-
-                rounded-full
-                bg-white/20
-
-                backdrop-blur-md
-                border
-                border-white/20
-
-                flex
-                items-center
-                justify-center
-
-                shadow-2xl
-              "
-              >
-                <UserCircle size={72} weight="fill" className="text-white" />
+              <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl">
+                <UserCircle size={48} weight="fill" className="text-white" />
               </div>
 
-              <h1 className="mt-5 text-3xl font-black text-white">
+              <h1 className="mt-3 text-2xl font-black text-white">
                 {user.fullName}
               </h1>
 
-              <p className="mt-2 text-blue-100">@{user.username}</p>
+              <p className="mt-1 text-sm text-blue-100">@{user.username}</p>
 
-              <div
-                className="
-                mt-5
-
-                flex
-                items-center
-                gap-2
-
-                bg-white/15
-                border
-                border-white/10
-
-                rounded-full
-
-                px-4
-                py-2
-
-                backdrop-blur-md
-              "
-              >
+              <div className="mt-3 flex items-center gap-2 bg-white/15 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-md">
                 <ShieldCheck
-                  size={18}
+                  size={16}
                   weight="fill"
                   className="text-emerald-300"
                 />
-
-                <span className="text-white text-sm font-semibold">
+                <span className="text-white text-xs font-semibold">
                   Cuenta protegida
                 </span>
               </div>
@@ -376,40 +280,9 @@ export default function ProfilePage() {
           </header>
 
           {/* CONTENT */}
-          <section
-            className="
-            relative
-
-            px-3
-            md:px-8
-
-            flex-1
-          "
-          >
+          <section className="relative px-4 sm:px-8 pb-6 flex-1 -mt-10">
             {/* FLOAT CARD */}
-            <div
-              className="
-              -mt-14
-
-              relative
-              z-20
-
-              bg-white
-
-              rounded-t-[30px]
-              lg:rounded-[30px]
-
-              border
-              border-slate-200
-
-              shadow-[0_10px_40px_rgba(15,23,42,0.08)]
-
-              h-auto
-
-              p-5
-              md:p-8
-            "
-            >
+            <div className="relative z-20 bg-white rounded-3xl border border-slate-200 shadow-lg p-5">
               {/* MESSAGE */}
               {message.text && (
                 <motion.div
@@ -417,140 +290,75 @@ export default function ProfilePage() {
                   animate={{ opacity: 1, y: 0 }}
                   role="alert"
                   aria-live="polite"
-                  className={`
-                  mb-6
-                  rounded-2xl
-                  px-4
-                  py-3
-
-                  flex
-                  items-center
-                  gap-3
-
-                  font-semibold
-                  border
-
-                  ${
+                  className={`mb-4 rounded-xl px-3 py-2 flex items-center gap-2 font-semibold text-sm border ${
                     message.type === "error"
                       ? "bg-red-50 border-red-200 text-red-700"
                       : "bg-emerald-50 border-emerald-200 text-emerald-700"
-                  }
-                `}
+                  }`}
                 >
-                  <CheckCircle size={20} weight="fill" />
-
+                  <CheckCircle size={18} weight="fill" />
                   <span>{message.text}</span>
                 </motion.div>
               )}
 
               {/* TITLE */}
-              <div className="mb-6">
-                <h2 className="text-2xl font-black text-slate-900">
+              <div className="mb-4">
+                <h2 className="text-xl font-black text-slate-900">
                   Configuración de la cuenta
                 </h2>
-
-                <p className="mt-1 text-slate-500">
+                <p className="mt-1 text-sm text-slate-500">
                   Administra tu información y seguridad
                 </p>
               </div>
 
               {/* FORM */}
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 {/* PERSONAL */}
                 <section aria-labelledby="personal-info-title">
-                  <div className="flex items-start sm:items-center gap-3 mb-5">
-                    <div className="w-11 h-11 rounded-2xl bg-blue-100 flex items-center justify-center shrink-0">
-                      <User size={22} weight="fill" className="text-blue-600" />
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                      <User size={18} weight="fill" className="text-blue-600" />
                     </div>
-
                     <div>
                       <h3
                         id="personal-info-title"
-                        className="font-black text-slate-900"
+                        className="font-black text-slate-900 text-sm"
                       >
                         Información personal
                       </h3>
-
-                      <p className="text-sm text-slate-500">
+                      <p className="text-xs text-slate-500">
                         Datos visibles de tu cuenta
                       </p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {/* FULLNAME */}
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       <label
                         htmlFor="fullName"
-                        className="block text-sm font-bold text-slate-700"
+                        className="block text-xs font-bold text-slate-700"
                       >
                         Nombre completo
                       </label>
-
                       <div className="relative group">
-                        <div
-                          className="
-                          absolute
-                          left-4
-                          top-1/2
-                          -translate-y-1/2
-
-                          text-slate-400
-
-                          transition-colors
-                          duration-200
-
-                          group-focus-within:text-blue-600
-                        "
-                        >
-                          <User size={20} />
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors duration-200 group-focus-within:text-blue-600">
+                          <User size={16} />
                         </div>
-
                         <input
                           id="fullName"
                           type="text"
                           autoComplete="name"
                           placeholder="Tu nombre completo"
                           {...register("fullName")}
-                          className="
-                          w-full
-                          h-12
-
-                          rounded-2xl
-                          border
-                          border-slate-200
-
-                          bg-white
-
-                          pl-12
-                          pr-4
-
-                          text-[15px]
-                          text-slate-800
-                          font-medium
-
-                          shadow-sm
-                          outline-none
-
-                          transition-all
-                          duration-200
-
-                          placeholder:text-slate-400
-
-                          hover:border-slate-300
-
-                          focus:border-blue-500
-                          focus:ring-4
-                          focus:ring-blue-500/10
-                        "
+                          className="w-full h-10 rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-800 font-medium shadow-sm outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
                         />
                       </div>
-
                       {errors.fullName && (
                         <motion.p
                           initial={{ opacity: 0, y: -3 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="text-sm font-medium text-red-500 pl-1"
+                          className="text-xs font-medium text-red-500 pl-1"
                         >
                           {errors.fullName.message}
                         </motion.p>
@@ -558,78 +366,31 @@ export default function ProfilePage() {
                     </div>
 
                     {/* USERNAME */}
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       <label
                         htmlFor="username"
-                        className="block text-sm font-bold text-slate-700"
+                        className="block text-xs font-bold text-slate-700"
                       >
                         Nombre de usuario
                       </label>
-
                       <div className="relative group">
-                        <div
-                          className="
-                          absolute
-                          left-4
-                          top-1/2
-                          -translate-y-1/2
-
-                          text-slate-400
-
-                          transition-colors
-                          duration-200
-
-                          group-focus-within:text-blue-600
-                        "
-                        >
-                          <At size={20} />
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors duration-200 group-focus-within:text-blue-600">
+                          <At size={16} />
                         </div>
-
                         <input
                           id="username"
                           type="text"
                           autoComplete="username"
                           placeholder="usuario123"
                           {...register("username")}
-                          className="
-                          w-full
-                          h-12
-
-                          rounded-2xl
-                          border
-                          border-slate-200
-
-                          bg-white
-
-                          pl-12
-                          pr-4
-
-                          text-[15px]
-                          text-slate-800
-                          font-medium
-
-                          shadow-sm
-                          outline-none
-
-                          transition-all
-                          duration-200
-
-                          placeholder:text-slate-400
-
-                          hover:border-slate-300
-
-                          focus:border-blue-500
-                          focus:ring-4
-                          focus:ring-blue-500/10
-                        "
+                          className="w-full h-10 rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-800 font-medium shadow-sm outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
                         />
                       </div>
-
                       {errors.username && (
                         <motion.p
                           initial={{ opacity: 0, y: -3 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="text-sm font-medium text-red-500 pl-1"
+                          className="text-xs font-medium text-red-500 pl-1"
                         >
                           {errors.username.message}
                         </motion.p>
@@ -638,78 +399,31 @@ export default function ProfilePage() {
                   </div>
 
                   {/* EMAIL */}
-                  <div className="mt-5 space-y-2">
+                  <div className="mt-3 space-y-1">
                     <label
                       htmlFor="email"
-                      className="block text-sm font-bold text-slate-700"
+                      className="block text-xs font-bold text-slate-700"
                     >
                       Correo electrónico
                     </label>
-
                     <div className="relative group">
-                      <div
-                        className="
-                        absolute
-                        left-4
-                        top-1/2
-                        -translate-y-1/2
-
-                        text-slate-400
-
-                        transition-colors
-                        duration-200
-
-                        group-focus-within:text-blue-600
-                      "
-                      >
-                        <Envelope size={20} />
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors duration-200 group-focus-within:text-blue-600">
+                        <Envelope size={16} />
                       </div>
-
                       <input
                         id="email"
                         type="email"
                         autoComplete="email"
                         placeholder="correo@ejemplo.com"
                         {...register("email")}
-                        className="
-                        w-full
-                        h-12
-
-                        rounded-2xl
-                        border
-                        border-slate-200
-
-                        bg-white
-
-                        pl-12
-                        pr-4
-
-                        text-[15px]
-                        text-slate-800
-                        font-medium
-
-                        shadow-sm
-                        outline-none
-
-                        transition-all
-                        duration-200
-
-                        placeholder:text-slate-400
-
-                        hover:border-slate-300
-
-                        focus:border-blue-500
-                        focus:ring-4
-                        focus:ring-blue-500/10
-                      "
+                        className="w-full h-10 rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-800 font-medium shadow-sm outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10"
                       />
                     </div>
-
                     {errors.email && (
                       <motion.p
                         initial={{ opacity: 0, y: -3 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-sm font-medium text-red-500 pl-1"
+                        className="text-xs font-medium text-red-500 pl-1"
                       >
                         {errors.email.message}
                       </motion.p>
@@ -719,72 +433,41 @@ export default function ProfilePage() {
 
                 {/* SECURITY */}
                 <section aria-labelledby="security-title">
-                  <div className="flex items-start sm:items-center gap-3 mb-5">
-                    <div className="w-11 h-11 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
                       <LockKey
-                        size={22}
+                        size={18}
                         weight="fill"
                         className="text-amber-600"
                       />
                     </div>
-
                     <div>
                       <h3
                         id="security-title"
-                        className="font-black text-slate-900"
+                        className="font-black text-slate-900 text-sm"
                       >
                         Seguridad
                       </h3>
-
-                      <p className="text-sm text-slate-500">
+                      <p className="text-xs text-slate-500">
                         Cambia tu contraseña si lo deseas
                       </p>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {/* CURRENT PASSWORD */}
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       <PasswordInput
                         label="Contraseña actual"
                         autoComplete="current-password"
                         {...register("currentPassword")}
-                        className="
-                        w-full
-                        h-12
-
-                        rounded-2xl
-                        border
-                        border-slate-200
-
-                        bg-white
-                        px-4
-
-                        text-[15px]
-                        text-slate-800
-                        font-medium
-
-                        shadow-sm
-                        outline-none
-
-                        transition-all
-                        duration-200
-
-                        placeholder:text-slate-400
-
-                        hover:border-slate-300
-
-                        focus:border-amber-500
-                        focus:ring-4
-                        focus:ring-amber-500/10
-                      "
+                        className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 font-medium shadow-sm outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10"
                       />
-
                       {errors.currentPassword && (
                         <motion.p
                           initial={{ opacity: 0, y: -3 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="text-sm font-medium text-red-500 pl-1"
+                          className="text-xs font-medium text-red-500 pl-1"
                         >
                           {errors.currentPassword.message}
                         </motion.p>
@@ -792,47 +475,18 @@ export default function ProfilePage() {
                     </div>
 
                     {/* NEW PASSWORD */}
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       <PasswordInput
                         label="Nueva contraseña"
                         autoComplete="new-password"
                         {...register("newPassword")}
-                        className="
-                        w-full
-                        h-12
-
-                        rounded-2xl
-                        border
-                        border-slate-200
-
-                        bg-white
-                        px-4
-
-                        text-[15px]
-                        text-slate-800
-                        font-medium
-
-                        shadow-sm
-                        outline-none
-
-                        transition-all
-                        duration-200
-
-                        placeholder:text-slate-400
-
-                        hover:border-slate-300
-
-                        focus:border-amber-500
-                        focus:ring-4
-                        focus:ring-amber-500/10
-                      "
+                        className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 font-medium shadow-sm outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10"
                       />
-
                       {errors.newPassword && (
                         <motion.p
                           initial={{ opacity: 0, y: -3 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="text-sm font-medium text-red-500 pl-1"
+                          className="text-xs font-medium text-red-500 pl-1"
                         >
                           {errors.newPassword.message}
                         </motion.p>
@@ -840,47 +494,18 @@ export default function ProfilePage() {
                     </div>
 
                     {/* CONFIRM PASSWORD */}
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       <PasswordInput
                         label="Confirmar nueva contraseña"
                         autoComplete="new-password"
                         {...register("confirmNewPassword")}
-                        className="
-                        w-full
-                        h-12
-
-                        rounded-2xl
-                        border
-                        border-slate-200
-
-                        bg-white
-                        px-4
-
-                        text-[15px]
-                        text-slate-800
-                        font-medium
-
-                        shadow-sm
-                        outline-none
-
-                        transition-all
-                        duration-200
-
-                        placeholder:text-slate-400
-
-                        hover:border-slate-300
-
-                        focus:border-amber-500
-                        focus:ring-4
-                        focus:ring-amber-500/10
-                      "
+                        className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 font-medium shadow-sm outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10"
                       />
-
                       {errors.confirmNewPassword && (
                         <motion.p
                           initial={{ opacity: 0, y: -3 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="text-sm font-medium text-red-500 pl-1"
+                          className="text-xs font-medium text-red-500 pl-1"
                         >
                           {errors.confirmNewPassword.message}
                         </motion.p>
@@ -894,86 +519,24 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="
-                    group
-                    relative
-
-                    w-full
-                    h-12
-
-                    overflow-hidden
-                    rounded-2xl
-
-                    bg-gradient-to-r
-                    from-blue-600
-                    via-blue-500
-                    to-cyan-500
-
-                    px-6
-
-                    font-bold
-                    text-white
-                    text-[15px]
-
-                    shadow-[0_10px_30px_rgba(37,99,235,0.35)]
-
-                    transition-all
-                    duration-300
-
-                    hover:scale-[1.01]
-                    hover:shadow-[0_15px_40px_rgba(37,99,235,0.45)]
-
-                    active:scale-[0.985]
-
-                    disabled:opacity-70
-                    disabled:cursor-not-allowed
-                    disabled:hover:scale-100
-
-                    cursor-pointer
-                  "
+                    className="group relative w-full h-10 overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 px-4 font-bold text-white text-sm shadow-md transition-all duration-300 hover:scale-[1.01] hover:shadow-lg active:scale-[0.985] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 cursor-pointer"
                   >
                     {/* Shine */}
-                    <div
-                      className="
-                      absolute
-                      inset-0
-
-                      bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.22),transparent)]
-
-                      translate-x-[-120%]
-                      group-hover:translate-x-[120%]
-
-                      transition-transform
-                      duration-1000
-                    "
-                    />
-
+                    <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.22),transparent)] -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                     {/* Content */}
                     <div className="relative z-10 flex items-center justify-center gap-2">
                       {isSubmitting ? (
                         <>
-                          <div
-                            className="
-                            w-5
-                            h-5
-                            rounded-full
-                            border-2
-                            border-white/40
-                            border-t-white
-                            animate-spin
-                          "
-                          />
-
+                          <div className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
                           <span>Guardando cambios...</span>
                         </>
                       ) : (
                         <>
                           <CheckCircle
-                            size={20}
+                            size={18}
                             weight="fill"
                             className="transition-transform duration-300 group-hover:scale-110"
                           />
-
                           <span>Guardar cambios</span>
                         </>
                       )}

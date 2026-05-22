@@ -1,4 +1,3 @@
-// VERSION #8 – Backend simplificado, panel de detalle por tipo de actividad con intentos reales
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -409,7 +408,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <main className="min-h-screen lg:h-screen bg-[#f8fbff] p-2 sm:p-4 lg:p-6 lg:overflow-hidden flex flex-col items-center justify-center">
+    <main className="min-h-screen  p-2 sm:p-4 lg:p-6 flex flex-col items-center justify-center">
       <div className="relative flex flex-col max-w-7xl mx-auto w-full p-3 sm:p-4 lg:p-6 bg-white rounded-3xl sm:rounded-4xl border border-slate-200 shadow-xl overflow-hidden">
         {/* Background blurs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
