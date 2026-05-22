@@ -199,7 +199,30 @@ export function Layout() {
         </nav>
 
         {/* Logout y sonido */}
-        <div className="p-3 border-t border-blue-500/40 flex">
+        <div className="p-3 border-t border-blue-500/40">
+          <button
+            onClick={toggleMute}
+            title={
+              collapsed && !isMobile
+                ? isMuted
+                  ? "Activar sonido"
+                  : "Silenciar sonido"
+                : undefined
+            }
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl text-md font-bold text-white transition-all duration-200 cursor-pointer ${
+              collapsed && !isMobile ? "justify-center" : "justify-start"
+            } hover:bg-gray-200/20  mb-2`}
+            aria-label={isMuted ? "Activar sonido" : "Silenciar sonido"}
+          >
+            {isMuted ? (
+              <SpeakerSlash className="w-5 h-5 flex-shrink-0" />
+            ) : (
+              <SpeakerHigh className="w-5 h-5 flex-shrink-0" />
+            )}
+            {(!collapsed || isMobile) && (
+              <span>{isMuted ? "Activar sonido" : "Silenciar sonido"}</span>
+            )}
+          </button>
           <button
             onClick={logout}
             title={collapsed && !isMobile ? "Cerrar sesión" : undefined}
@@ -208,15 +231,7 @@ export function Layout() {
             } hover:bg-red-900`}
           >
             <SignOut className="w-5 h-5 flex-shrink-0" />
-
             {(!collapsed || isMobile) && <span>Cerrar sesión</span>}
-          </button>
-          <button
-            onClick={toggleMute}
-            className="p-2 rounded-full text-white transition-all duration-200 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-            aria-label={isMuted ? "Activar sonido" : "Silenciar sonido"}
-          >
-            {isMuted ? <SpeakerSlash size={24} /> : <SpeakerHigh size={24} />}
           </button>
         </div>
       </aside>
