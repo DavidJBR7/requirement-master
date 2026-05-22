@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -38,8 +37,9 @@ public class ProgressService {
         int totalScore = lp.getTotalScore();
         boolean passed = totalScore >= 70;
 
+        // Solo los ActivityProgress activos (intento actual)
         List<ActivityProgress> activities = activityProgressRepository
-                .findByUserIdAndActivity_LessonId(userId, lessonId);
+                .findByUserIdAndActivity_LessonIdAndActiveTrue(userId, lessonId);
         int xpEarnedThisAttempt = activities.stream().mapToInt(ActivityProgress::getXpEarned).sum();
 
         lp.setFinalized(true);
@@ -83,13 +83,16 @@ public class ProgressService {
                 .findByUserIdAndLessonId(userId, lessonId)
                 .orElseThrow(() -> new BusinessException("No hay progreso para reiniciar"));
 
-        List<ActivityProgress> activityProgressList = activityProgressRepository
-                .findByUserIdAndActivity_LessonId(userId, lessonId);
-        for (ActivityProgress ap : activityProgressList) {
-            answerRecordRepository.deleteAll(ap.getAnswers());
-            activityProgressRepository.delete(ap);
+        // Archivar todos los ActivityProgress activos de esta lección
+        List<ActivityProgress> activeProgressList = activityProgressRepository
+                .findByUserIdAndActivity_LessonIdAndActiveTrue(userId, lessonId);
+        for (ActivityProgress ap : activeProgressList) {
+            ap.setActive(false);
+            activityProgressRepository.save(ap);
+            // Los AnswerRecord asociados no se borran, se conservan para el histórico
         }
 
+        // Reiniciar los contadores de la lección
         lp.setTotalScore(0);
         lp.setStatus(LessonProgressStatus.AVAILABLE);
         lp.setCompletedActivities(0);

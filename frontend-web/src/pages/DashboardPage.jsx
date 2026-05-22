@@ -1,396 +1,128 @@
-import { motion } from "framer-motion";
-import {
-  Trophy,
-  Lightning,
-  BookOpen,
-  ArrowRight,
-  Target,
-  Brain,
-  Sparkle,
-  CheckCircle,
-} from "@phosphor-icons/react";
-
+// VERSION #8 – Backend simplificado, panel de detalle por tipo de actividad con intentos reales
+import { useState, useMemo, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   ResponsiveContainer,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
   Radar,
-  AreaChart,
-  Area,
-  CartesianGrid,
-  XAxis,
-  Tooltip,
+  RadialBarChart,
+  RadialBar,
 } from "recharts";
-
+import {
+  Trophy,
+  Lightning,
+  ArrowRight,
+  Target,
+  ArrowsCounterClockwise,
+  Brain,
+  Sparkle,
+  CaretDown,
+  Fire,
+  LightbulbFilament,
+  TreeStructureIcon,
+} from "@phosphor-icons/react";
 import { useDashboard } from "../features/dashboard/hooks/useDashboard";
 
-import { useNavigate } from "react-router-dom";
-
+// ──────────────────────────────────────────────
+// Constants
+// ──────────────────────────────────────────────
 const typeLabels = {
   TRUE_FALSE: "Verdadero/Falso",
   MULTIPLE_CHOICE: "Opción múltiple",
-  MATCH_PAIRS: "Relacionar",
-  DRAG_DROP_COLUMNS: "Columnas",
+  MATCH_PAIRS: "Emparejar",
+  DRAG_DROP_COLUMNS: "Arrastrar A Columnas",
   SORTABLE_LIST: "Ordenar",
-  SWIPE_CARDS: "Tarjetas",
-  CHATBOT_SIMULATION: "Chat IA",
+  SWIPE_CARDS: "Tarjetas Deslizables",
+  CHATBOT_SIMULATION: "Chatbot",
   VENN_DIAGRAM: "Venn",
-  USER_STORY_BUILDER: "User Stories",
+  USER_STORY_BUILDER: "Historias de Usuario",
   REWRITE_REQUIREMENT: "Reescritura",
 };
 
-export default function DashboardPage() {
-  const navigate = useNavigate();
+const typeColors = {
+  TRUE_FALSE: "#6366f1",
+  MULTIPLE_CHOICE: "#8b5cf6",
+  MATCH_PAIRS: "#a855f7",
+  DRAG_DROP_COLUMNS: "#d946ef",
+  SORTABLE_LIST: "#ec4899",
+  SWIPE_CARDS: "#f43f5e",
+  CHATBOT_SIMULATION: "#f97316",
+  VENN_DIAGRAM: "#eab308",
+  USER_STORY_BUILDER: "#22c55e",
+  REWRITE_REQUIREMENT: "#14b8a6",
+};
 
-  const handleRoadmap = () => {
-    navigate("/roadmap");
-  };
-
-  const { data: dashboard, isLoading } = useDashboard();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[70vh]">
-        <div className="w-10 h-10 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
-      </div>
-    );
-  }
-
-  const { summary, lessons, performance, nextRecommendation } = dashboard;
-
-  const radarData = performance.byType.map((item) => ({
-    subject: typeLabels[item.type] || item.type,
-    accuracy: item.accuracy || 5,
-  }));
-
-  const progressData = lessons.map((lesson) => ({
-    name: `L${lesson.order}`,
-    progreso:
-      lesson.totalActivities === 0
-        ? 0
-        : Math.round(
-            (lesson.completedActivities / lesson.totalActivities) * 100,
-          ),
-  }));
-
-  const strongestType = [...performance.byType].sort(
-    (a, b) => b.accuracy - a.accuracy,
-  )[0];
-
-  return (
-    <section className="min-h-screen bg-gradient-to-b from-slate-50 to-blue-50/40 px-4 lg:px-8 py-8">
-      <div className="max-w-7xl mx-auto">
-        {/* HERO */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="
-            relative overflow-hidden
-            rounded-[32px]
-            border border-blue-100
-            bg-white
-            p-8
-            shadow-[0_10px_40px_rgba(59,130,246,0.08)]
-            mb-8
-          "
-        >
-          <div className="absolute top-0 right-0 w-72 h-72 bg-blue-100 rounded-full blur-3xl opacity-50" />
-
-          <div className="relative z-10 flex flex-col lg:flex-row gap-8 justify-between">
-            <div className="flex-1">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 mb-5">
-                <Sparkle size={18} className="text-blue-500" />
-                <span className="text-sm font-medium text-blue-700">
-                  Dashboard de aprendizaje
-                </span>
-              </div>
-
-              <h1 className="text-4xl lg:text-5xl font-black text-slate-900 leading-tight">
-                Sigue avanzando en
-                <span className="block text-blue-600">Requeriment Master</span>
-              </h1>
-
-              <p className="text-slate-600 mt-4 max-w-2xl text-lg">
-                Analiza tu rendimiento, fortalece tus habilidades y completa
-                actividades para dominar la captura de requerimientos.
-              </p>
-
-              <div className="flex flex-wrap gap-4 mt-8">
-                <HeroStat
-                  icon={<Lightning size={20} weight="fill" />}
-                  label="XP Total"
-                  value={summary.totalXp}
-                />
-
-                <HeroStat
-                  icon={<BookOpen size={20} weight="fill" />}
-                  label="Lecciones"
-                  value={`${summary.completedLessons}/${summary.totalLessons}`}
-                />
-
-                <HeroStat
-                  icon={<Target size={20} weight="fill" />}
-                  label="Precisión"
-                  value={`${performance.globalAccuracy}%`}
-                />
-              </div>
-
-              <button
-                className="
-                  mt-8
-                  inline-flex items-center gap-2
-                  px-5 py-3
-                  rounded-2xl
-                  bg-blue-600
-                  hover:bg-blue-700
-                  text-white
-                  font-semibold
-                  transition-all
-                  shadow-lg shadow-blue-500/20
-                "
-                onClick={handleRoadmap}
-              >
-                Continuar aprendiendo
-                <ArrowRight size={18} weight="bold" />
-              </button>
-            </div>
-
-            {/* PROGRESS */}
-            <div className="flex items-center justify-center">
-              <div className="relative w-56 h-56">
-                <svg className="w-full h-full rotate-[-90deg]">
-                  <circle
-                    cx="112"
-                    cy="112"
-                    r="90"
-                    stroke="#e2e8f0"
-                    strokeWidth="14"
-                    fill="transparent"
-                  />
-
-                  <motion.circle
-                    cx="112"
-                    cy="112"
-                    r="90"
-                    stroke="#2563eb"
-                    strokeWidth="14"
-                    fill="transparent"
-                    strokeLinecap="round"
-                    strokeDasharray={565}
-                    initial={{ strokeDashoffset: 565 }}
-                    animate={{
-                      strokeDashoffset:
-                        565 - (565 * summary.progressPercent) / 100,
-                    }}
-                    transition={{ duration: 1.5 }}
-                  />
-                </svg>
-
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="text-5xl font-black text-slate-900">
-                    {summary.progressPercent}%
-                  </div>
-
-                  <div className="text-sm text-slate-500 mt-2">
-                    progreso total
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* GRID */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          {/* RADAR */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="
-              lg:col-span-2
-              rounded-[28px]
-              border border-slate-200
-              bg-white
-              p-6
-              shadow-sm
-            "
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900">
-                  Rendimiento por actividad
-                </h2>
-
-                <p className="text-slate-500 text-sm mt-1">
-                  Precisión obtenida según cada dinámica
-                </p>
-              </div>
-
-              <div className="px-4 py-2 rounded-xl bg-blue-50 text-blue-700 text-sm font-semibold">
-                {performance.globalAccuracy}% precisión
-              </div>
-            </div>
-
-            <div className="h-[360px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData}>
-                  <PolarGrid stroke="#dbeafe" />
-
-                  <PolarAngleAxis
-                    dataKey="subject"
-                    tick={{ fill: "#475569", fontSize: 12 }}
-                  />
-
-                  <Radar
-                    dataKey="accuracy"
-                    stroke="#2563eb"
-                    fill="#60a5fa"
-                    fillOpacity={0.5}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-          {/* STATS */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="
-              rounded-[28px]
-              border border-slate-200
-              bg-white
-              p-6
-              shadow-sm
-            "
-          >
-            <h2 className="text-2xl font-bold text-slate-900 mb-1">Insights</h2>
-
-            <p className="text-slate-500 text-sm mb-6">
-              Estadísticas rápidas de aprendizaje
-            </p>
-
-            <div className="space-y-4">
-              <InsightCard
-                icon={<Brain size={22} weight="fill" />}
-                title="Mejor actividad"
-                value={
-                  strongestType ? typeLabels[strongestType.type] : "Sin datos"
-                }
-              />
-
-              <InsightCard
-                icon={<Trophy size={22} weight="fill" />}
-                title="Nota promedio"
-                value={`${summary.averageBestScore}/100`}
-              />
-
-              <InsightCard
-                icon={<Lightning size={22} weight="fill" />}
-                title="XP acumulada"
-                value={summary.totalXp}
-              />
-
-              <InsightCard
-                icon={<CheckCircle size={22} weight="fill" />}
-                title="Intentos realizados"
-                value={summary.totalAttempts}
-              />
-            </div>
-
-            {nextRecommendation && (
-              <div className="mt-6 rounded-2xl bg-blue-50 border border-blue-100 p-4">
-                <p className="text-xs uppercase tracking-wide font-bold text-blue-600 mb-1">
-                  Recomendación
-                </p>
-
-                <p className="text-sm text-blue-900 font-medium">
-                  {nextRecommendation}
-                </p>
-              </div>
-            )}
-          </motion.div>
-        </div>
-
-        {/* AREA CHART */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="
-            rounded-[28px]
-            border border-slate-200
-            bg-white
-            p-6
-            shadow-sm
-          "
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">
-                Actividad por lección
-              </h2>
-
-              <p className="text-slate-500 text-sm mt-1">
-                Avance general en las lecciones disponibles
-              </p>
-            </div>
-          </div>
-
-          <div className="h-[320px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={progressData}>
-                <defs>
-                  <linearGradient id="fillBlue">
-                    <stop offset="0%" stopColor="#60a5fa" stopOpacity={0.5} />
-                    <stop offset="100%" stopColor="#60a5fa" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-
-                <CartesianGrid stroke="#e2e8f0" />
-
-                <XAxis dataKey="name" tick={{ fill: "#64748b" }} />
-
-                <Tooltip />
-
-                <Area
-                  type="monotone"
-                  dataKey="progreso"
-                  stroke="#2563eb"
-                  fill="url(#fillBlue)"
-                  strokeWidth={3}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
+function cn(...classes) {
+  return classes.filter(Boolean).join(" ");
 }
 
-function HeroStat({ icon, label, value }) {
+// ──────────────────────────────────────────────
+// Premium Stat Card
+// ──────────────────────────────────────────────
+function PremiumStatCard({ icon, label, value, sub, gradient, glow }) {
   return (
     <motion.div
-      whileHover={{ y: -2 }}
-      className="
-        rounded-2xl
-        border border-slate-200
-        bg-slate-50
-        px-5 py-4
-        min-w-[140px]
-      "
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.2 }}
+      className={cn(
+        "relative overflow-hidden rounded-4xl border border-white/60 bg-white/80 backdrop-blur-xl p-6 shadow-md",
+      )}
     >
-      <div className="flex items-center gap-2 text-slate-500 text-sm mb-2">
-        {icon}
-        {label}
+      <div className={cn("absolute inset-0 opacity-[0.08]", gradient)} />
+      <div
+        className={cn(
+          "absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl opacity-30",
+          glow,
+        )}
+      />
+      <div className="relative">
+        <div className="flex items-center justify-between mb-3">
+          <div
+            className={cn(
+              "w-9 h-9 rounded-2xl flex items-center justify-center text-white",
+              gradient,
+            )}
+          >
+            {icon}
+          </div>
+        </div>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">
+          {label}
+        </p>
+        <h3 className="text-2xl font-black text-slate-900 mt-1 leading-none">
+          {value}
+        </h3>
+        <p className="text-xs text-slate-500 mt-1">{sub}</p>
       </div>
-
-      <div className="text-3xl font-black text-slate-900">{value}</div>
     </motion.div>
   );
 }
 
+// ──────────────────────────────────────────────
+// Mini Metric Card
+// ──────────────────────────────────────────────
+function MiniMetricCard({ icon, label, value }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-slate-200 p-3 shadow-sm">
+      <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+        {icon}
+      </div>
+      <div>
+        <p className="text-sm uppercase tracking-wide text-slate-400 font-semibold">
+          {label}
+        </p>
+        <p className="font-bold text-slate-900 text-sm">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Insight Card
+// ──────────────────────────────────────────────
 function InsightCard({ icon, title, value }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -398,15 +130,472 @@ function InsightCard({ icon, title, value }) {
         <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
           {icon}
         </div>
-
         <div>
           <p className="text-xs uppercase tracking-wide text-slate-500 font-semibold">
             {title}
           </p>
-
           <p className="font-bold text-slate-900 mt-1">{value}</p>
         </div>
       </div>
     </div>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Type Detail Panel (por tipo de actividad)
+// ──────────────────────────────────────────────
+function TypeDetailPanel({ breakdowns, selectedType, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const current =
+    breakdowns.find((b) => b.type === selectedType) || breakdowns[0];
+  const hasData = current && (current.accuracy > 0 || current.totalXp > 0);
+  const color = typeColors[current?.type] || "#6366f1";
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Dropdown */}
+      <div className="relative mb-3">
+        <button
+          onClick={() => setOpen(!open)}
+          className="
+            w-full flex items-center justify-between
+            rounded-xl border border-slate-200 bg-white px-3 py-2
+            text-sm font-semibold text-slate-800
+            hover:border-blue-300 transition-colors shadow-sm
+            cursor-pointer
+          "
+        >
+          <span className="flex items-center gap-2 truncate">
+            <span
+              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: color }}
+            />
+            {typeLabels[current?.type] || selectedType}
+          </span>
+          <CaretDown
+            size={16}
+            className={`text-slate-400 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        <AnimatePresence>
+          {open && (
+            <motion.ul
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              className="
+                absolute z-20 top-full left-0 right-0 mt-1
+                rounded-xl border border-slate-200 bg-white
+                shadow-xl max-h-52 overflow-auto
+              "
+            >
+              {breakdowns.map((b) => (
+                <li key={b.type}>
+                  <button
+                    onClick={() => {
+                      onSelect(b.type);
+                      setOpen(false);
+                    }}
+                    className={`
+                      w-full text-left px-4 py-2.5 text-sm font-medium
+                      flex items-center gap-2
+                      hover:bg-slate-50 transition-colors cursor-pointer
+                      ${b.type === selectedType ? "bg-blue-50 text-blue-700" : "text-slate-700"}
+                    `}
+                  >
+                    <span
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{
+                        backgroundColor: typeColors[b.type] || "#6366f1",
+                      }}
+                    />
+                    {typeLabels[b.type] || b.type}
+                    {b.accuracy > 0 && (
+                      <span className="ml-auto text-[11px] text-slate-400 flex-shrink-0">
+                        {b.accuracy}%
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </motion.ul>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Métricas en cards */}
+      <div className="space-y-2">
+        <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold px-0.5">
+          Métricas de {typeLabels[current?.type] || ""}
+        </p>
+        {hasData ? (
+          <div className="space-y-2">
+            <MiniMetricCard
+              icon={<Lightning size={16} weight="fill" />}
+              label="XP ganada"
+              value={current.totalXp}
+            />
+            <MiniMetricCard
+              icon={<Target size={16} weight="fill" />}
+              label="Precisión"
+              value={`${current.accuracy}%`}
+            />
+            <MiniMetricCard
+              icon={<ArrowsCounterClockwise size={16} weight="fill" />}
+              label="Intentos"
+              value={current.attempts}
+            />
+          </div>
+        ) : (
+          <div className="text-center py-4">
+            <Brain size={28} className="mx-auto text-slate-300 mb-2" />
+            <p className="text-sm text-slate-500 font-medium">
+              Aún no has practicado esta actividad
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Main Dashboard Page
+// ──────────────────────────────────────────────
+export default function DashboardPage() {
+  const navigate = useNavigate();
+  const { data: dashboard, isLoading, error } = useDashboard();
+  const [selectedType, setSelectedType] = useState(null);
+
+  const derived = useMemo(() => {
+    if (!dashboard) return null;
+    const { summary, performance, lessons } = dashboard;
+
+    const totalActivities = lessons.reduce(
+      (acc, l) => acc + l.totalActivities,
+      0,
+    );
+    const completedActivities = lessons.reduce(
+      (acc, l) => acc + l.completedActivities,
+      0,
+    );
+
+    // Mejor tipo por accuracy y por XP
+    const bestAccuracy =
+      [...performance.byType]
+        .filter((b) => b.accuracy > 0)
+        .sort((a, b) => b.accuracy - a.accuracy)[0] || null;
+    const bestXp =
+      [...performance.byType]
+        .filter((b) => b.totalXp > 0)
+        .sort((a, b) => b.totalXp - a.totalXp)[0] || null;
+
+    // Tipo por defecto en el detalle: el de mayor precisión o el primero
+    const defaultType =
+      bestAccuracy?.type || performance.byType[0]?.type || null;
+
+    return {
+      totalActivities,
+      completedActivities,
+      bestAccuracy,
+      bestXp,
+      defaultType,
+      nextRecommendation: dashboard.nextRecommendation,
+      progressPercent: summary.progressPercent,
+    };
+  }, [dashboard]);
+
+  // Seleccionar tipo por defecto cuando los datos cambien
+  useEffect(() => {
+    if (derived?.defaultType && !selectedType) {
+      setSelectedType(derived.defaultType);
+    }
+  }, [derived, selectedType]);
+
+  // ── Loading / Error States ──────────────────
+  if (isLoading) {
+    return (
+      <main className="h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 border-[3px] border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-slate-500 font-medium">Cargando dashboard...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !dashboard || !derived) {
+    return (
+      <main className="h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <p className="text-red-500 font-bold">Error al cargar el dashboard</p>
+        </div>
+      </main>
+    );
+  }
+
+  const { summary, performance, lessons } = dashboard;
+  const {
+    totalActivities,
+    completedActivities,
+    bestAccuracy,
+    bestXp,
+    progressPercent,
+    nextRecommendation,
+  } = derived;
+
+  const radarData = performance.byType.map((item) => ({
+    subject: typeLabels[item.type] || item.type,
+    accuracy: item.accuracy || 5,
+  }));
+
+  const handleGoRecommendation = () => {
+    const nextLesson = lessons.find(
+      (l) =>
+        l.status === "AVAILABLE" && l.completedActivities < l.totalActivities,
+    );
+    if (nextLesson) {
+      navigate(`/lessons/${nextLesson.lessonId}`);
+    } else {
+      navigate("/roadmap");
+    }
+  };
+
+  return (
+    <main className="h-screen flex flex-col justify-center overflow-hidden bg-[#f8fbff]">
+      <div className="relative flex flex-col max-w-7xl mx-auto w-full p-4 lg:p-6 bg-white rounded-4xl border border-slate-200 shadow-xl">
+        {/* Background blurs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-cyan-500/10 blur-3xl" />
+        </div>
+
+        <motion.header
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="
+            relative overflow-hidden
+            rounded-[36px]
+            bg-gradient-to-br from-blue-900 via-blue-600 to-blue-500
+            md:px-12 py-6
+            shadow-lg
+            text-white mb-6
+          "
+        >
+          <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-white/10 blur-3xl" />
+          <div className="relative flex items-center justify-between gap-6">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black">
+                Mi dashboard
+              </h1>
+              <p className="text-blue-100 mt-1 text-sm md:text-base">
+                Analiza tu rendimiento, desbloquea nuevas lecciones y mejora tu
+                precisión en ingeniería de requerimientos.
+              </p>
+              <button
+                onClick={handleGoRecommendation}
+                className="
+                  inline-flex items-center gap-1.5
+                  px-4 py-1.5 rounded-2xl
+                  bg-white/10 backdrop-blur-md border border-white/30
+                  font-bold
+                  hover:scale-[1.02]
+                  transition-all
+                  text-md
+                  cursor-pointer
+                  mt-6
+                "
+              >
+                <Sparkle size={14} weight="fill" />
+                Continuar aprendiendo
+              </button>
+            </div>
+
+            {/* Progress donut */}
+            <div className="flex-shrink-0 w-[14vh] h-[14vh]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadialBarChart
+                  innerRadius="75%"
+                  outerRadius="100%"
+                  data={[{ value: progressPercent }]}
+                  startAngle={90}
+                  endAngle={-270}
+                >
+                  <RadialBar
+                    dataKey="value"
+                    fill="#ffffff"
+                    cornerRadius={20}
+                    background={{ fill: "rgba(255,255,255,0.15)" }}
+                  />
+                </RadialBarChart>
+              </ResponsiveContainer>
+              <div className="relative -mt-[130px] md:-mt-[155px] flex flex-col items-center justify-center h-[130px] md:h-[155px]">
+                <span className="text-3xl md:text-4xl font-black text-white">
+                  {progressPercent}%
+                </span>
+                <span className="text-[10px] md:text-xs text-blue-100 mt-1">
+                  progreso total
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.header>
+
+        <div className="flex flex-col gap-4">
+          {/* ── Stats Row (Fila 1) ────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          >
+            <PremiumStatCard
+              icon={<Target size={22} weight="fill" />}
+              label="Precisión global"
+              value={`${performance.globalAccuracy}%`}
+              sub="de todas las respuestas"
+              gradient="bg-gradient-to-br from-rose-500 to-pink-500"
+              glow="bg-rose-500"
+            />
+            <PremiumStatCard
+              icon={<Lightning size={22} weight="fill" />}
+              label="XP acumulada"
+              value={summary.totalXp}
+              sub="Experiencia total"
+              gradient="bg-gradient-to-br from-violet-500 to-indigo-500"
+              glow="bg-violet-500"
+            />
+            <PremiumStatCard
+              icon={<Trophy size={22} weight="fill" />}
+              label="Promedio"
+              value={`${summary.averageBestScore}/100`}
+              sub="Mejor nota promedio"
+              gradient="bg-gradient-to-br from-amber-400 to-orange-500"
+              glow="bg-orange-500"
+            />
+            <PremiumStatCard
+              icon={<Fire size={22} weight="fill" />}
+              label="Actividades"
+              value={`${completedActivities}/${totalActivities}`}
+              sub="Realizadas"
+              gradient="bg-gradient-to-br from-cyan-500 to-blue-500"
+              glow="bg-cyan-500"
+            />
+          </motion.div>
+
+          {/* ── Main Content (Fila 2) ──────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            {/* Left column: Insights */}
+            <aside className="lg:col-span-1 flex flex-col gap-3 rounded-4xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <TreeStructureIcon
+                  size={18}
+                  className="text-blue-500"
+                  weight="fill"
+                />
+                <h2 className="text-lg font-bold text-slate-900">Insights</h2>
+              </div>
+              {bestAccuracy && (
+                <InsightCard
+                  icon={<Target size={22} weight="fill" />}
+                  title="Mayor precisión"
+                  value={`${typeLabels[bestAccuracy.type] || ""}: ${bestAccuracy.accuracy}%`}
+                />
+              )}
+              {bestXp && (
+                <InsightCard
+                  icon={<Lightning size={22} weight="fill" />}
+                  title="Más XP"
+                  value={`${typeLabels[bestXp.type] || ""}: ${bestXp.totalXp} XP`}
+                />
+              )}
+              {/* Recommendation */}
+              <div className="relative overflow-hidden rounded-4xl bg-white/80 backdrop-blur-xl p-6">
+                <div className="absolute inset-0 opacity-[0.2] bg-gradient-to-b from-cyan-500 to-blue-500"></div>
+                <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl opacity-30 bg-cyan-500"></div>
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-9 h-9 rounded-2xl flex items-center justify-center text-white bg-gradient-to-br from-cyan-500 to-blue-500">
+                      <LightbulbFilament size={22} weight="fill" />
+                    </div>
+                  </div>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">
+                    Recomendación
+                  </p>
+                  <h3 className="text-2xl font-black text-slate-900 mt-1 leading-none">
+                    {nextRecommendation}
+                  </h3>
+                  <button
+                    onClick={() => navigate("/roadmap")}
+                    className="mt-6 inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-white text-blue-700 font-bold shadow-sm cursor-pointer"
+                  >
+                    Continuar
+                    <ArrowRight size={16} weight="bold" />
+                  </button>
+                </div>
+              </div>
+            </aside>
+
+            {/* Center: Radar Chart */}
+            <article className="lg:col-span-2 min-h-[50vh] rounded-4xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col">
+              <div className="flex items-center justify-between mb-2 flex-shrink-0">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">
+                    Rendimiento por actividad
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Precisión en cada dinámica
+                  </p>
+                </div>
+                <div className="px-3 py-1 rounded-xl bg-blue-50 text-blue-700 text-xs font-semibold">
+                  {performance.globalAccuracy}% global
+                </div>
+              </div>
+              <div className="flex-1 min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={radarData}>
+                    <PolarGrid stroke="#dbeafe" />
+                    <PolarAngleAxis
+                      dataKey="subject"
+                      tick={{ fill: "#475569", fontSize: 11 }}
+                    />
+                    <Radar
+                      dataKey="accuracy"
+                      stroke="#2563eb"
+                      fill="#60a5fa"
+                      fillOpacity={0.5}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            </article>
+
+            {/* Right column: Detalle por tipo */}
+            <aside className="col-span-1 rounded-4xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col">
+              <div className="flex items-center gap-2 mb-1">
+                <Brain size={18} weight="fill" className="text-blue-500" />
+                <h2 className="text-lg font-bold text-slate-900">Detalle</h2>
+              </div>
+              <p className="text-sm text-slate-500 mb-3">
+                Selecciona un tipo de actividad
+              </p>
+              {performance.byType.length > 0 ? (
+                <TypeDetailPanel
+                  breakdowns={performance.byType}
+                  selectedType={selectedType}
+                  onSelect={setSelectedType}
+                />
+              ) : (
+                <div className="text-center py-4 text-slate-500">
+                  No hay datos de actividades
+                </div>
+              )}
+            </aside>
+          </div>
+        </div>
+      </div>
+    </main>
   );
 }

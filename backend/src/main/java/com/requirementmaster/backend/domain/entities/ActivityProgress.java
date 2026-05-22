@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "activity_progress", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "activity_id"})
+@Table(name = "activity_progress", indexes = {
+        @Index(name = "idx_unique_active_progress", columnList = "user_id, activity_id", unique = true)
 })
 @Getter @Setter
 @NoArgsConstructor
@@ -37,6 +37,10 @@ public class ActivityProgress {
     @Column(nullable = false)
     @Builder.Default
     private int xpEarned = 0;        // XP total obtenida en esta actividad (se asigna al finalizar)
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;   // true = intento actual; false = archivado
 
     @Builder.Default
     @OneToMany(mappedBy = "activityProgress", cascade = CascadeType.ALL, orphanRemoval = true)

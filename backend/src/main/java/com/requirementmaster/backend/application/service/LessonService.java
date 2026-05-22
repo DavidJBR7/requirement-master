@@ -73,13 +73,13 @@ public class LessonService {
             );
         }
 
-        // Usar la misma lógica centralizada
         LessonProgressStatus effectiveStatus = determineEffectiveStatus(lesson, userId, lessonProgress);
 
         Map<Long, ActivityProgress> activityProgressMap = Collections.emptyMap();
         if (lessonProgress != null) {
+            // Solo progreso activo (sesión actual)
             List<ActivityProgress> activityProgressList = activityProgressRepository
-                    .findByUserIdAndActivity_LessonId(userId, lessonId);
+                    .findByUserIdAndActivity_LessonIdAndActiveTrue(userId, lessonId);
             activityProgressMap = activityProgressList.stream()
                     .collect(Collectors.toMap(ap -> ap.getActivity().getId(), ap -> ap));
         }

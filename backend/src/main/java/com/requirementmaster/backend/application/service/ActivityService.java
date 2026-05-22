@@ -52,8 +52,9 @@ public class ActivityService {
             }
         }
 
+        // Solo el progreso activo (intento actual)
         ActivityProgress progress = activityProgressRepository
-                .findByUserIdAndActivityId(userId, activityId)
+                .findByUserIdAndActivityIdAndActiveTrue(userId, activityId)
                 .orElse(null);
         return ActivityFullResponse.from(activity, progress);
     }
@@ -108,6 +109,9 @@ public class ActivityService {
                 .map(AnswerRecordResponse::from)
                 .collect(Collectors.toList());
     }
+
+    // Métodos de evaluación se mantienen igual ...
+    // (omito el cuerpo por brevedad, pero van exactamente igual que en tu código original)
 
     private List<AnswerRecord> evaluateAnswer(Activity activity, String questionId,
                                               JsonNode userAnswer, ActivityProgress activityProgress) {
@@ -315,8 +319,9 @@ public class ActivityService {
     }
 
     private void updateLessonProgress(LessonProgress lp, ActivityProgress ap, Lesson lesson) {
+        // Solo suma los progresos activos (intento actual)
         List<ActivityProgress> allActivityProgress = activityProgressRepository
-                .findByUserIdAndActivity_LessonId(lp.getUser().getId(), lesson.getId());
+                .findByUserIdAndActivity_LessonIdAndActiveTrue(lp.getUser().getId(), lesson.getId());
         int newTotalScore = allActivityProgress.stream().mapToInt(ActivityProgress::getScore).sum();
         lp.setTotalScore(Math.min(newTotalScore, 100));
 
@@ -334,13 +339,15 @@ public class ActivityService {
         String lockKey = userId + "_" + activity.getId();
         Object lock = progressLocks.computeIfAbsent(lockKey, k -> new Object());
         synchronized (lock) {
+            // Busca solo el activo
             ActivityProgress progress = activityProgressRepository
-                    .findByUserIdAndActivityId(userId, activity.getId())
+                    .findByUserIdAndActivityIdAndActiveTrue(userId, activity.getId())
                     .orElse(null);
             if (progress == null) {
                 progress = ActivityProgress.builder()
                         .user(getUserReference(userId))
                         .activity(activity)
+                        .active(true)          // explícitamente activo
                         .build();
                 progress = activityProgressRepository.save(progress);
             }

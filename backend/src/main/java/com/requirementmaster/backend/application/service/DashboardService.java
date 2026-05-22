@@ -23,15 +23,13 @@ public class DashboardService {
     private final JpaAnswerRecordRepository answerRecordRepository;
 
     public DashboardResponse getUserDashboard(Long userId) {
-        // 1. Obtener todas las lecciones ordenadas
         List<Lesson> allLessons = lessonRepository.findAllByOrderByOrderIndexAsc();
 
-        // 2. Obtener progreso de lecciones del usuario con fetch de Lesson
         List<LessonProgress> userLessonProgress = lessonProgressRepository.findAllByUserIdWithLesson(userId);
         Map<Long, LessonProgress> progressMap = userLessonProgress.stream()
                 .collect(Collectors.toMap(lp -> lp.getLesson().getId(), lp -> lp));
 
-        // 3. Resumen general
+        // --- Summary ---
         int totalLessons = allLessons.size();
         long completedCount = userLessonProgress.stream()
                 .filter(lp -> lp.getStatus() == LessonProgressStatus.COMPLETED)
@@ -48,54 +46,39 @@ public class DashboardService {
                 .average()
                 .orElse(0);
 
-        int totalAttempts = userLessonProgress.stream()
-                .mapToInt(LessonProgress::getAttempts)
-                .sum();
-
         DashboardResponse.Summary summary = DashboardResponse.Summary.builder()
-                .totalLessons(totalLessons)
-                .completedLessons((int) completedCount)
                 .progressPercent(Math.round(progressPercent * 10.0) / 10.0)
                 .totalXp(totalXp)
                 .averageBestScore(Math.round(avgBestScore * 10.0) / 10.0)
-                .totalAttempts(totalAttempts)
                 .build();
 
-        // 4. Progreso por lección
+        // --- Lesson items (solo campos necesarios) ---
         List<DashboardResponse.LessonProgressItem> lessonItems = allLessons.stream()
                 .map(lesson -> {
                     LessonProgress lp = progressMap.get(lesson.getId());
                     return DashboardResponse.LessonProgressItem.builder()
                             .lessonId(lesson.getId())
                             .title(lesson.getTitle())
-                            .order(lesson.getOrderIndex())
-                            .isExam(lesson.isExam())
-                            .totalActivities(lesson.getActivities().size())
                             .status(lp != null ? lp.getStatus() : LessonProgressStatus.LOCKED)
-                            .bestScore(lp != null ? lp.getBestScore() : 0)
-                            .currentScore(lp != null ? lp.getTotalScore() : 0)
-                            .xpEarned(lp != null ? lp.getTotalXpEarned() : 0)
                             .completedActivities(lp != null ? lp.getCompletedActivities() : 0)
-                            .finalized(lp != null && lp.isFinalized())
-                            .lastActivityOrder(lp != null ? lp.getLastActivityOrder() : 0)
+                            .totalActivities(lesson.getActivities().size())
                             .build();
                 })
                 .toList();
 
-        // 5. Rendimiento global y por tipo de actividad
+        // --- Performance global + por tipo (ahora con intentos) ---
         List<AnswerRecord> userAnswers = answerRecordRepository.findAllByUserIdWithRelations(userId);
 
         long totalAnswers = userAnswers.size();
         long correctAnswers = userAnswers.stream().filter(AnswerRecord::isCorrect).count();
         double globalAccuracy = totalAnswers == 0 ? 0 : (correctAnswers * 100.0) / totalAnswers;
 
-        // Agrupar respuestas por tipo de actividad
         Map<ActivityType, List<AnswerRecord>> answersByType = userAnswers.stream()
                 .collect(Collectors.groupingBy(ar -> ar.getActivityProgress().getActivity().getType()));
 
-        // Obtener todos los progresos de actividad del usuario para métricas de puntuación/XP
-        List<ActivityProgress> userActivityProgress = activityProgressRepository.findAllByUserIdWithActivity(userId);
-        Map<ActivityType, List<ActivityProgress>> progressByType = userActivityProgress.stream()
+        // Obtener todos los ActivityProgress (incluye tanto activos como archivados)
+        List<ActivityProgress> allUserProgress = activityProgressRepository.findAllByUserIdWithActivity(userId);
+        Map<ActivityType, List<ActivityProgress>> progressByType = allUserProgress.stream()
                 .collect(Collectors.groupingBy(ap -> ap.getActivity().getType()));
 
         List<DashboardResponse.Performance.TypeBreakdown> breakdowns = Arrays.stream(ActivityType.values())
@@ -106,15 +89,16 @@ public class DashboardService {
                     double typeAccuracy = typeTotal == 0 ? 0 : (typeCorrect * 100.0) / typeTotal;
 
                     List<ActivityProgress> typeProgress = progressByType.getOrDefault(type, List.of());
-                    double avgScore = typeProgress.isEmpty() ? 0 :
-                            typeProgress.stream().mapToInt(ActivityProgress::getScore).average().orElse(0);
                     int typeXp = typeProgress.stream().mapToInt(ActivityProgress::getXpEarned).sum();
+
+                    // Intentos = número de ActivityProgress distintos de este tipo
+                    int attempts = typeProgress.size();
 
                     return DashboardResponse.Performance.TypeBreakdown.builder()
                             .type(type)
                             .accuracy(Math.round(typeAccuracy * 10.0) / 10.0)
-                            .avgScore(Math.round(avgScore * 10.0) / 10.0)
                             .totalXp(typeXp)
+                            .attempts(attempts)
                             .build();
                 })
                 .toList();
@@ -124,7 +108,7 @@ public class DashboardService {
                 .byType(breakdowns)
                 .build();
 
-        // 6. Lección actual y recomendación
+        // --- Current lesson & recommendation (sin cambios) ---
         List<LessonProgress> unfinalizedInProgress = lessonProgressRepository
                 .findUnfinalizedInProgress(userId, LessonProgressStatus.IN_PROGRESS);
 
@@ -132,7 +116,7 @@ public class DashboardService {
         String recommendation;
 
         if (!unfinalizedInProgress.isEmpty()) {
-            // Tomamos la primera (por orden de lección) – ya podrías ordenarlas aquí si hiciera falta
+            // Caso 1: Hay una lección empezada pero no finalizada
             LessonProgress lp = unfinalizedInProgress.get(0);
             currentLesson = DashboardResponse.CurrentLessonInfo.builder()
                     .lessonId(lp.getLesson().getId())
@@ -140,18 +124,44 @@ public class DashboardService {
                     .nextActivityOrder(lp.getLastActivityOrder() + 1)
                     .build();
             recommendation = "Continúa con la lección «" + lp.getLesson().getTitle() + "»";
+
         } else {
-            // Buscar la primera lección sin progreso o bloqueada
-            Optional<Lesson> firstLocked = allLessons.stream()
-                    .filter(lesson -> {
-                        LessonProgress lp = progressMap.get(lesson.getId());
-                        return lp == null || lp.getStatus() == LessonProgressStatus.LOCKED;
-                    })
-                    .findFirst();
-            if (firstLocked.isPresent()) {
-                recommendation = "Empieza la lección «" + firstLocked.get().getTitle() + "»";
+            // 2. Buscar lecciones finalizadas pero suspendidas (reprobadas)
+            Optional<LessonProgress> failedLesson = userLessonProgress.stream()
+                    .filter(lp -> lp.isFinalized() && lp.getStatus() == LessonProgressStatus.AVAILABLE)
+                    .min(Comparator.comparing(lp -> lp.getLesson().getOrderIndex()));
+
+            if (failedLesson.isPresent()) {
+                LessonProgress lp = failedLesson.get();
+                currentLesson = DashboardResponse.CurrentLessonInfo.builder()
+                        .lessonId(lp.getLesson().getId())
+                        .title(lp.getLesson().getTitle())
+                        .nextActivityOrder(1)  // empezar desde la primera actividad
+                        .build();
+                recommendation = "Repite la lección «" + lp.getLesson().getTitle()
+                        + "» (necesitas 70% para aprobar)";
+
             } else {
-                recommendation = "¡Has completado todas las lecciones!";
+                // 3. Buscar primera lección bloqueada o sin empezar
+                Optional<Lesson> firstAvailable = allLessons.stream()
+                        .filter(lesson -> {
+                            LessonProgress lp = progressMap.get(lesson.getId());
+                            return lp == null || lp.getStatus() == LessonProgressStatus.LOCKED;
+                        })
+                        .findFirst();
+
+                if (firstAvailable.isPresent()) {
+                    currentLesson = DashboardResponse.CurrentLessonInfo.builder()
+                            .lessonId(firstAvailable.get().getId())
+                            .title(firstAvailable.get().getTitle())
+                            .nextActivityOrder(1)
+                            .build();
+                    recommendation = "Empieza la lección «" + firstAvailable.get().getTitle() + "»";
+                } else {
+                    // 4. Todo completado
+                    currentLesson = null;
+                    recommendation = "¡Has completado todas las lecciones!";
+                }
             }
         }
 

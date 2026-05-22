@@ -5,7 +5,6 @@ import com.requirementmaster.backend.domain.enums.LessonProgressStatus;
 import lombok.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Getter @Setter
 @NoArgsConstructor
@@ -24,12 +23,9 @@ public class DashboardResponse {
     @AllArgsConstructor
     @Builder
     public static class Summary {
-        private int totalLessons;
-        private int completedLessons;
         private double progressPercent;
         private int totalXp;
         private double averageBestScore;
-        private int totalAttempts;
     }
 
     @Getter @Setter
@@ -39,16 +35,9 @@ public class DashboardResponse {
     public static class LessonProgressItem {
         private Long lessonId;
         private String title;
-        private int order;
-        private boolean isExam;
         private LessonProgressStatus status;
-        private int bestScore;
-        private int currentScore;
-        private int xpEarned;
         private int completedActivities;
         private int totalActivities;
-        private boolean finalized;
-        private int lastActivityOrder;
     }
 
     @Getter @Setter
@@ -66,8 +55,8 @@ public class DashboardResponse {
         public static class TypeBreakdown {
             private ActivityType type;
             private double accuracy;
-            private double avgScore;
             private int totalXp;
+            private int attempts;           // total de intentos de este tipo de actividad
         }
     }
 
