@@ -90,14 +90,26 @@ public class ActivityService {
 
         ActivityProgress activityProgress = getOrCreateActivityProgress(userId, activity);
 
-        if (activityProgress.getAnswers().stream()
-                .anyMatch(ar -> ar.getQuestionId().equals(request.getQuestionId()))) {
-            throw new BusinessException("Esta pregunta ya fue respondida en este intento.");
+        // 1. Buscar respuesta previa para este questionId
+        Optional<AnswerRecord> existingRecordOpt = activityProgress.getAnswers().stream()
+                .filter(ar -> ar.getQuestionId().equals(request.getQuestionId()))
+                .findFirst();
+
+        // 2. Si existe, restaurar el progreso restando los puntos/XP antiguos
+        if (existingRecordOpt.isPresent()) {
+            AnswerRecord oldRecord = existingRecordOpt.get();
+            activityProgress.setScore(activityProgress.getScore() - oldRecord.getPointsAwarded());
+            activityProgress.setXpEarned(activityProgress.getXpEarned() - oldRecord.getXpAwarded());
+            // Eliminar el registro viejo de la colección y de la base de datos
+            activityProgress.getAnswers().remove(oldRecord);
+            answerRecordRepository.delete(oldRecord);
         }
 
+        // 3. Evaluar la nueva respuesta (igual que antes)
         JsonNode answerNode = objectMapper.convertValue(request.getUserAnswer(), JsonNode.class);
         List<AnswerRecord> records = evaluateAnswer(activity, request.getQuestionId(), answerNode, activityProgress);
 
+        // 4. Agregar los nuevos puntos y registros
         for (AnswerRecord record : records) {
             activityProgress.setScore(activityProgress.getScore() + record.getPointsAwarded());
             activityProgress.setXpEarned(activityProgress.getXpEarned() + record.getXpAwarded());
