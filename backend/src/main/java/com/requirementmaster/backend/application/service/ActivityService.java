@@ -81,6 +81,11 @@ public class ActivityService {
                     .totalActivities(lesson.getActivities().size())
                     .build();
             lessonProgress = lessonProgressRepository.save(lessonProgress);
+        } else if (lessonProgress.getStatus() != LessonProgressStatus.IN_PROGRESS) {
+            // Si el LessonProgress existía pero no está en progreso (ej. AVAILABLE por reprobado),
+            // IN_PROGRESS porque el usuario está retomando la lección.
+            lessonProgress.setStatus(LessonProgressStatus.IN_PROGRESS);
+            lessonProgressRepository.save(lessonProgress);
         }
 
         ActivityProgress activityProgress = getOrCreateActivityProgress(userId, activity);
