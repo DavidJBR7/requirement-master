@@ -6,6 +6,7 @@ import VennDiagramActivity from "./VennDiagramActivity";
 import SwipeCardsActivity from "./SwipeCardsActivity";
 import DragDropColumnsActivity from "./DragDropColumnsActivity";
 import SortableListActivity from "./SortableListActivity";
+import UserStoryBuilderActivity from "./UserStoryBuilderActivity";
 
 export default function ActivityFactory({
   activity,
@@ -44,6 +45,8 @@ export default function ActivityFactory({
       return <DragDropColumnsActivity {...commonProps} />;
     case "SORTABLE_LIST":
       return <SortableListActivity {...commonProps} />;
+    case "USER_STORY_BUILDER":
+      return <UserStoryBuilderActivity {...commonProps} />;
     default:
       return (
         <p className="text-gray-500">Tipo de actividad no soportada aún.</p>
