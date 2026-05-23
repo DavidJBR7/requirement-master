@@ -157,80 +157,13 @@ export default function SwipeCardsActivity({
 
   const currentItem = items[currentIndex];
 
-  if (completed) {
-    const totalXp = Object.values(answers).reduce(
-      (acc, a) => acc + (a.xp || 0),
-      0,
-    );
-
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center px-4 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85, y: 40 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="w-full max-w-xl"
-        >
-          <div className="rounded-[2rem] sm:rounded-[2.5rem] bg-white/80 backdrop-blur-2xl border border-white shadow-[0_20px_80px_rgba(59,130,246,0.18)] p-6 sm:p-10">
-            <motion.div
-              animate={{
-                rotate: [0, 8, -8, 0],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-              }}
-              className="mx-auto w-fit"
-            >
-              <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center shadow-xl">
-                <HeartStraight
-                  size={36}
-                  weight="fill"
-                  className="text-white sm:hidden"
-                />
-                <HeartStraight
-                  size={54}
-                  weight="fill"
-                  className="text-white hidden sm:block"
-                />
-              </div>
-            </motion.div>
-
-            <h2 className="mt-6 sm:mt-8 text-center text-3xl sm:text-4xl font-black text-slate-800">
-              ¡Completado!
-            </h2>
-
-            <p className="mt-2 sm:mt-3 text-center text-slate-500 text-base sm:text-lg">
-              Has terminado todas las tarjetas correctamente.
-            </p>
-
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-6 sm:mt-8">
-              <div className="rounded-2xl sm:rounded-3xl bg-sky-50 border border-sky-100 p-4 sm:p-5 text-center">
-                <p className="text-slate-500 text-xs sm:text-sm">Tarjetas</p>
-                <p className="text-2xl sm:text-3xl font-black text-sky-600 mt-1">
-                  {items.length}
-                </p>
-              </div>
-
-              <div className="rounded-2xl sm:rounded-3xl bg-indigo-50 border border-indigo-100 p-4 sm:p-5 text-center">
-                <p className="text-slate-500 text-xs sm:text-sm">XP ganada</p>
-                <p className="text-2xl sm:text-3xl font-black text-indigo-600 mt-1">
-                  +{totalXp}
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
-
   if (!currentItem) return null;
 
   const isCorrect = answers[currentItem.id]?.correct;
   const showFeedback = feedback?.itemId === currentItem.id;
 
   return (
-    <div className="relative min-h-[100dvh] overflow-hidden bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
+    <div className="relative bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-100">
       {/* BACKGROUND BLOBS */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -266,7 +199,7 @@ export default function SwipeCardsActivity({
 
       <div className="relative z-10 w-full max-w-7xl mx-auto p-4 sm:p-8">
         {/* HEADER */}
-        <div className="flex items-center justify-between gap-3 mb-4 sm:mb-8">
+        <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 sm:gap-2 text-sky-600 mb-1 sm:mb-2">
               <Sparkle size={14} weight="fill" className="sm:hidden" />
@@ -276,7 +209,7 @@ export default function SwipeCardsActivity({
               </span>
             </div>
 
-            <h1 className="text-xl sm:text-2xl md:text-5xl font-black text-slate-800 truncate">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-800 truncate">
               Clasifica las tarjetas
             </h1>
           </div>
@@ -305,8 +238,8 @@ export default function SwipeCardsActivity({
         </div>
 
         {/* PROGRESS */}
-        <div className="mb-6 sm:mb-10">
-          <div className="h-3 sm:h-4 rounded-full overflow-hidden bg-white/70 border border-white shadow-inner">
+        <div className="mb-4 sm:mb-6">
+          <div className="h-2 sm:h-3 rounded-full overflow-hidden bg-white/70 border border-white shadow-inner">
             <motion.div
               initial={{ width: 0 }}
               animate={{
@@ -318,7 +251,10 @@ export default function SwipeCardsActivity({
         </div>
 
         {/* CARD AREA */}
-        <div className="relative flex items-center justify-center h-[calc(100dvh-280px)] sm:h-[70vh]">
+        <div
+          className="relative flex items-center justify-center"
+          style={{ height: "560px" }}
+        >
           {/* STACK */}
           {[2, 1].map((layer) => (
             <motion.div
@@ -328,7 +264,7 @@ export default function SwipeCardsActivity({
                 y: layer * 12,
                 opacity: 0.5,
               }}
-              className="absolute w-full max-w-md sm:max-w-2xl h-[420px] sm:h-[620px] rounded-[2rem] sm:rounded-[3rem] bg-white/60 backdrop-blur-xl border border-white shadow-[0_20px_60px_rgba(59,130,246,0.08)]"
+              className="absolute w-full max-w-sm sm:max-w-md h-[500px] sm:h-[540px] rounded-[2rem] sm:rounded-[3rem] bg-white/60 backdrop-blur-xl border border-white shadow-[0_20px_60px_rgba(59,130,246,0.08)]"
             />
           ))}
 
@@ -399,75 +335,76 @@ function SwipeableCard({
           stiffness: 260,
           damping: 20,
         }}
-        className="relative w-full max-w-md sm:max-w-2xl h-[420px] sm:h-[620px] rounded-[2rem] sm:rounded-[3rem] overflow-hidden touch-none"
+        className="relative w-full max-w-sm sm:max-w-md h-[500px] sm:h-[540px] rounded-[2rem] sm:rounded-[3rem] overflow-hidden touch-none cursor-pointer"
       >
         {/* MAIN CARD */}
-        <div className="absolute inset-0 rounded-[2rem] sm:rounded-[3rem] bg-white/80 backdrop-blur-2xl border border-white shadow-[0_25px_80px_rgba(59,130,246,0.18)]" />
+        <div className="absolute inset-0 rounded-[2rem] sm:rounded-[3rem] bg-brand-gradient border border-white shadow-[0_25px_80px_rgba(59,130,246,0.18)]" />
 
         {/* TOP GRADIENT */}
-        <div className="absolute inset-x-0 top-0 h-32 sm:h-44 bg-gradient-to-b from-sky-100/80 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-24 sm:h-50 bg-gradient-to-b from-sky-100/40 to-transparent rounded-t-[2rem] sm:rounded-t-[3rem]" />
 
         {/* SWIPE OVERLAYS */}
         <motion.div
           style={{ opacity: leftOpacity }}
-          className="absolute inset-0 bg-gradient-to-r from-red-400/25 to-transparent z-10 pointer-events-none rounded-[2rem] sm:rounded-[3rem]"
+          className="absolute inset-0 bg-gradient-to-r from-cyan-300/80 to-transparent z-10 pointer-events-none rounded-[2rem] sm:rounded-[3rem]"
         />
 
         <motion.div
           style={{ opacity: rightOpacity }}
-          className="absolute inset-0 bg-gradient-to-l from-emerald-400/25 to-transparent z-10 pointer-events-none rounded-[2rem] sm:rounded-[3rem]"
+          className="absolute inset-0 bg-gradient-to-l from-purple-500/80 to-transparent z-10 pointer-events-none rounded-[2rem] sm:rounded-[3rem]"
         />
 
         {/* BADGES */}
         <motion.div
           style={{ opacity: leftOpacity }}
-          className="absolute top-6 sm:top-10 left-6 sm:left-10 z-20 rotate-[-15deg]"
+          className="absolute top-4 sm:top-6 left-4 sm:left-6 z-20 rotate-[-15deg]"
         >
-          <div className="px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl border-4 border-red-500 bg-white text-red-500 font-black text-lg sm:text-2xl shadow-xl">
+          <div className="px-3 sm:px-5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border-2 border-cyan-300 bg-white text-cyan-300 font-black text-base sm:text-lg shadow-xl">
             {item.left_label}
           </div>
         </motion.div>
 
         <motion.div
           style={{ opacity: rightOpacity }}
-          className="absolute top-6 sm:top-10 right-6 sm:right-10 z-20 rotate-[15deg]"
+          className="absolute top-4 sm:top-6 right-4 sm:right-6 z-20 rotate-[15deg]"
         >
-          <div className="px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl border-4 border-emerald-500 bg-white text-emerald-500 font-black text-lg sm:text-2xl shadow-xl">
+          <div className="px-3 sm:px-5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border-2 border-purple-500 bg-white text-purple-500 font-black text-base sm:text-lg shadow-xl">
             {item.right_label}
           </div>
         </motion.div>
 
         {/* CONTENT */}
-        <div className="relative z-20 h-full flex flex-col p-6 sm:p-10">
+        <div className="relative z-20 h-full flex flex-col p-4 sm:p-6">
           {/* TOP */}
-          <div className="flex items-center justify-between">
-            <div className="rounded-full bg-sky-100 text-sky-700 px-3 sm:px-5 py-1.5 sm:py-2 font-bold text-xs sm:text-sm">
+          <div className="flex items-center justify-center">
+            <div className="rounded-full bg-white/20 text-slate-200 border border-white/20 px-3 sm:px-4 py-1 sm:py-1.5 font-bold text-[11px] sm:text-xs flex gap-2">
+              <Sparkle size={14} weight="fill" />
               Tarjeta interactiva
             </div>
 
             {answered ? (
               isCorrect ? (
-                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-emerald-100 flex items-center justify-center">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-emerald-100 flex items-center justify-center">
                   <CheckCircle
-                    size={22}
+                    size={18}
                     weight="fill"
                     className="text-emerald-600 sm:hidden"
                   />
                   <CheckCircle
-                    size={28}
+                    size={22}
                     weight="fill"
                     className="text-emerald-600 hidden sm:block"
                   />
                 </div>
               ) : (
-                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-red-100 flex items-center justify-center">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-100 flex items-center justify-center">
                   <XCircle
-                    size={22}
+                    size={18}
                     weight="fill"
                     className="text-red-500 sm:hidden"
                   />
                   <XCircle
-                    size={28}
+                    size={22}
                     weight="fill"
                     className="text-red-500 hidden sm:block"
                   />
@@ -481,25 +418,25 @@ function SwipeableCard({
             <motion.p
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center text-slate-800 text-xl sm:text-3xl md:text-[2.2rem] leading-[1.35] font-black"
+              className="text-center text-slate-200 text-lg sm:text-xl leading-[1.35] font-black"
             >
               {item.prompt}
             </motion.p>
           </div>
 
           {/* BUTTONS */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-5">
+          <div className="grid grid-cols-2 ">
             <button
               disabled={isAnimating}
               onClick={() => onAnswer(item.id, "left")}
-              className="group relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] bg-red-50 border border-red-100 py-4 sm:py-6 font-black text-red-500 shadow-lg transition active:scale-95"
+              className="group relative overflow-hidden rounded-l-[1.2rem] sm:rounded-l=[1.5rem] bg-red-50 bg-white/20 text-slate-200 border border-white/20 py-3 sm:py-4 font-black shadow-lg transition active:scale-95 cursor-pointer"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-red-100/0 to-red-100 opacity-0 group-hover:opacity-100 transition" />
+              <div className="absolute inset-0 bg-gradient-to-l from-cyan-100/0 to-cyan-300 opacity-0 group-hover:opacity-100 transition" />
 
-              <div className="relative flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-lg">
-                <ArrowLeft size={18} weight="bold" className="sm:hidden" />
+              <div className="relative flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm">
+                <ArrowLeft size={16} weight="bold" className="sm:hidden" />
                 <ArrowLeft
-                  size={24}
+                  size={20}
                   weight="bold"
                   className="hidden sm:block"
                 />
@@ -510,15 +447,15 @@ function SwipeableCard({
             <button
               disabled={isAnimating}
               onClick={() => onAnswer(item.id, "right")}
-              className="group relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] bg-emerald-50 border border-emerald-100 py-4 sm:py-6 font-black text-emerald-600 shadow-lg transition active:scale-95"
+              className="group relative overflow-hidden rounded-r-[1.2rem] sm:rounded-r-[1.5rem] bg-white/20 text-slate-200 border border-white/20 py-3 sm:py-4 font-black shadow-lg transition active:scale-95 cursor-pointer"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-100/0 to-emerald-100 opacity-0 group-hover:opacity-100 transition" />
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-100/0 to-purple-500 opacity-0 group-hover:opacity-100 transition" />
 
-              <div className="relative flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-lg">
+              <div className="relative flex items-center justify-center gap-1 sm:gap-1.5 text-xs sm:text-sm">
                 {item.right_label}
-                <ArrowRight size={18} weight="bold" className="sm:hidden" />
+                <ArrowRight size={16} weight="bold" className="sm:hidden" />
                 <ArrowRight
-                  size={24}
+                  size={20}
                   weight="bold"
                   className="hidden sm:block"
                 />
